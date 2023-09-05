@@ -76,6 +76,7 @@ beginUpload() {
             if [[ $ntfscnt -eq 0 && $extfscnt -eq 0 && $btrfscnt -eq 0 && $f2fscnt -eq 0 && $xfscnt -eq 0 ]]; then
                 msg_val="Failed"
                 echo "$msg_val"
+                callBackLog $msg_val $msg
                 debugPause
                 handleError "No resizable partitions found ($0)\n   Args Passed: $*"
             fi
@@ -134,6 +135,7 @@ beginUpload() {
                                 *)
                                     msg_val="Failed"
                                     echo "$msg_val"
+                                    callBackLog $msg_val $msg
                                     debugPause
                                     handleError " * Could not create mount location ($0->${FUNCNAME[0]})\n    Args Passed: $*"
                                     ;;
@@ -149,6 +151,7 @@ beginUpload() {
                             *)
                                 msg_val="Failed"
                                 echo "$msg_val"
+                                callBackLog $msg_val $msg
                                 debugPause
                                 handleError " * Could not mount $part ($0->${FUNCNAME[0]})\n    Args Passed: $*\n    Reason: $(cat /tmp/ntfs-mount-output | tr -d \\0)"
                                 ;;
@@ -175,10 +178,9 @@ beginUpload() {
             # Windows 2000/XP, Vista, 7, 8, 8.1, Linux:
             #  Save unmodified partition table for download use
             #  Start filesytem type record
-            dots "Saving original partition table"
             msg="Saving original partition table"
             dots $msg
-            saveOriginalPartitions "$hd" "$imagePath" 1
+            saveOriginalPartitions "$hd" "$imagePath" 1 $msg
             swapuuidfilename=""
             swapUUIDFileName "$imagePath" 1
             echo -n "" > "$imagePath/d1.original.fstypes"

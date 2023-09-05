@@ -4,6 +4,7 @@ dots $msg
 if [[ -z $img ]]; then
     msg_val="Failed"
     echo "$msg_val"
+    callBackLog $msg_val $msg
     debugPause
     handleError "Fatal Error: img variable not set. ($0)\n   Args Passed: $*"
 fi

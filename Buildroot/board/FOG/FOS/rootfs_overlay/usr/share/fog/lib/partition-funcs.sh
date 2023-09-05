@@ -630,9 +630,11 @@ saveOriginalPartitions() {
     local disk="$1"
     local imagePath="$2"
     local disk_number="$3"
+    local msg="$4"
     [[ -z $disk ]] && handleError "No disk passed (${FUNCNAME[0]})\n   Args Passed: $*"
     [[ -z $imagePath ]] && handleError "No image path passed (${FUNCNAME[0]})\n   Args Passed: $*"
     [[ -z $disk_number ]] && handleError "No disk number passed (${FUNCNAME[0]})\n   Args Passed: $*"
+    [[ -z $msg ]] && handleError "No msg passed (${FUNCNAME[0]})\n   Args Passed: $*"
     local table_type=""
     getPartitionTableType "$disk"
     case $table_type in
@@ -642,14 +644,19 @@ saveOriginalPartitions() {
             saveSfdiskPartitions "$disk" "$sfdiskoriginalpartitionfilename"
             ;;
         GPT-MBR)
-            echo "Failed"
+            msg_val="Failed"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
             runFixparts "$disk"
-            dots "Retrying to save partition table"
-            saveOriginalPartitions "$disk" "$imagePath" "$disk_number"
+            msg="Retrying to save partition table"
+            dots $msg
+            saveOriginalPartitions "$disk" "$imagePath" "$disk_number" $msg
             ;;
         *)
-            echo "Failed"
+            msg_val="Failed"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
             handleError "Unexpected partition table type: $table_type (${FUNCNAME[0]})\n   Args Passed: $*"
             ;;

@@ -88,6 +88,7 @@ verifyNetworkConnection() {
     if [[ -z $count || $count -lt 1 ]]; then
         local msg_val="Failed"
         echo $msg_val
+        callBackLog $msg_val $msg
         debugPause
         handleError "No network interfaces found (${FUNCNAME[0]})\n   Args Passed: $*"
     fi
@@ -235,6 +236,7 @@ expandPartition() {
                 *)
                     msg_val="Failed"
                     echo "$msg_val"
+                    callBackLog $msg_val $msg
                     debugPause
                     handleError "Could not resize $part (${FUNCNAME[0]})\n   Info: $(cat /tmp/tmpoutput.txt)\n   Args Passed: $*"
                     ;;
@@ -255,6 +257,7 @@ expandPartition() {
                     if [[ $? -gt 0 ]]; then
                         msg_val="Failed"
                         echo "$msg_val"
+                        callBackLog $msg_val $msg
                         debugPause
                         handleError "Could not check before resize (${FUNCNAME[0]})\n   Info: $(cat /tmp/e2fsck.txt)\n   Args Passed: $*"
                     fi
@@ -267,6 +270,7 @@ expandPartition() {
                 *)
                     msg_val="Failed"
                     echo "$msg_val"
+                    callBackLog $msg_val $msg
                     debugPause
                     handleError "Could not resize $part (${FUNCNAME[0]})\n   Info: $(cat /tmp/resize2fs.txt)\n   Args Passed: $*"
                     ;;
@@ -282,6 +286,7 @@ expandPartition() {
                     if [[ $? -gt 0 ]]; then
                         msg_val="Failed"
                         echo "$msg_val"
+                        callBackLog $msg_val $msg
                         debugPause
                         handleError "Could not check after resize (${FUNCNAME[0]})\n   Info: $(cat /tmp/e2fsck.txt)\n   Args Passed: $*"
                     fi
@@ -300,6 +305,7 @@ expandPartition() {
                 if [[ $? -gt 0 ]]; then
                     msg_val="Failed"
                     echo "$msg_val"
+                    callBackLog $msg_val $msg
                     debugPause
                     handleError "Could not create /tmp/btrfs (${FUNCNAME[0]})\n   Info: $(cat /tmp/btrfslog.txt)\n   Args Passed: $*"
                 fi
@@ -308,6 +314,7 @@ expandPartition() {
             if [[ $? -gt 0 ]]; then
                 msg_val="Failed"
                 echo "$msg_val"
+                callBackLog $msg_val $msg
                 debugPause
                 handleError "Could not mount $part to /tmp/btrfs (${FUNCNAME[0]})\n   Info: $(cat /tmp/btrfslog.txt)\n   Args Passed: $*"
             fi
@@ -315,6 +322,7 @@ expandPartition() {
             if [[ $? -gt 0 ]]; then
                 msg_val="Failed"
                 echo "$msg_val"
+                callBackLog $msg_val $msg
                 debugPause
                 handleError "Could not resize btrfs partition (${FUNCNAME[0]})\n   Info: $(cat /tmp/btrfslog.txt)\n   Args Passed: $*"
             fi
@@ -322,6 +330,7 @@ expandPartition() {
             if [[ $? -gt 0 ]]; then
                 msg_val="Failed"
                 echo "$msg_val"
+                callBackLog $msg_val $msg
                 debugPause
                 handleError "Could not unmount $part from /tmp/btrfs (${FUNCNAME[0]}\n   Info: $(cat /tmp/btrfslog.txt)\n   Args Passed: $*)"
             fi
@@ -337,6 +346,7 @@ expandPartition() {
                 if [[ $? -gt 0 ]]; then
                     msg_val="Failed"
                     echo "$msg_val"
+                    callBackLog $msg_val $msg
                     debugPause
                     handleError "Could not expand f2fs partition (${FUNCNAME[0]})\n   Info: $(cat /tmp/resize.f2fs.txt)\n  Args Passed: $*"
                 fi
@@ -358,6 +368,7 @@ expandPartition() {
                     if [[ $? -gt 0 ]]; then
                         msg_val="Failed"
                         echo "$msg_val"
+                        callBackLog $msg_val $msg
                         debugPause
                         handleError "Could not resize partition $part (${FUNCNAME[0]})\n   Info: $(cat /tmp/xfslog.txt)\n   Args Passed: $*"
                     fi
@@ -366,6 +377,7 @@ expandPartition() {
                         if [[ $? -gt 0 ]]; then
                             msg_val="Failed"
                             echo "$msg_val"
+                            callBackLog $msg_val $msg
                             debugPause
                             handleError "Could not create /tmp/xfs (${FUNCNAME[0]})\n   Info: $(cat /tmp/xfslog.txt)\n   Args Passed: $*"
                         fi
@@ -374,6 +386,7 @@ expandPartition() {
                     if [[ $? -gt 0 ]]; then
                         msg_val="Failed"
                         echo "$msg_val"
+                        callBackLog $msg_val $msg
                         debugPause
                         handleError "Could not mount $part to /tmp/xfs (${FUNCNAME[0]})\n   Info: $(cat /tmp/xfslog.txt)\n   Args Passed: $*"
                     fi
@@ -381,6 +394,7 @@ expandPartition() {
                     if [[ $? -gt 0 ]]; then
                         msg_val="Failed"
                         echo "$msg_val"
+                        callBackLog $msg_val $msg
                         debugPause
                         handleError "Could not grow XFS partition $part (${FUNCNAME[0]})\n   Info: $(cat /tmp/xfslog.txt)\n   Args Passed: $*"
                     fi
@@ -388,6 +402,7 @@ expandPartition() {
                     if [[ $? -gt 0 ]]; then
                         msg_val="Failed"
                         echo "$msg_val"
+                        callBackLog $msg_val $msg
                         debugPause
                         handleError "Could not unmount $part from /tmp/xfs (${FUNCNAME[0]})\n   Info: $(cat /tmp/xfslog.txt)\n   Args Passed: $*"
                     fi
@@ -547,6 +562,7 @@ prepareUploadLocation() {
             *)
                 msg_val="Failed"
                 echo "$msg_val"
+                callBackLog $msg_val $msg
                 debugPause
                 local spaceAvailable=$(getServerDiskSpaceSvailable)
                 handleError "Failed to create image capture path (${FUNCNAME[0]})\nServer Disk Space Available: $spaceAvailable\n   Args Passed: $*"
@@ -568,6 +584,7 @@ prepareUploadLocation() {
         *)
             msg_val="Failed"
             echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
             handleError "Failed to set permissions (${FUNCNAME[0]})\n   Args Passed: $*"
             ;;
@@ -585,6 +602,7 @@ prepareUploadLocation() {
         *)
             msg_val="Failed"
             echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
             handleError "Could not clean files (${FUNCNAME[0]})\n   Args Passed: $*"
             ;;
@@ -614,6 +632,9 @@ movePartition() {
     currPartStart=$(grep "$part" $tmp_file1 | cut -d',' -f1 | awk -F'=' '{print $2}' | tr -d ' ')
     if [[ $currPartStart -gt $newStart ]]; then
         echo " * Moving $part forward to close gap between end of $prevPart and start of $part."
+        msg="Moving $part forward to close gap between end of $prevPart and start of $part."
+        msg_val="T"
+        callBackLog $msg_val $msg
         debugPause
         processSfdisk "$tmp_file1" move "$part" "$newStart" > "$tmp_file2"
         if [[ $ismajordebug -gt 0 ]]; then
@@ -645,6 +666,9 @@ shrinkPartition() {
     local is_fixed=$(echo $fixed | awk "/(^$part_number:|:$part_number:|:$part_number$|^$part_number$)/{print 1}")
     if [[ $is_fixed -eq 1 ]]; then
         echo " * Not shrinking ($part) as it is detected as fixed size"
+        msg="Not shrinking ($part) as it is detected as fixed size"
+        msg_val="T"
+        callBackLog $msg_val $msg
         debugPause
         return
     fi
@@ -669,6 +693,9 @@ shrinkPartition() {
             ntfsresize -fivP $part >/tmp/tmpoutput.txt 2>&1
             if [[ ! $? -eq 0 ]]; then
                 echo " * Not shrinking ($part) trying fixed size"
+                msg="Not shrinking ($part) trying fixed size"
+                msg_val="T"
+                callBackLog $msg_val $msg
                 debugPause
                 echo "$(cat "$imagePath/d1.fixed_size_partitions" | tr -d \\0):${part_number}" > "$imagePath/d1.fixed_size_partitions"
                 return
@@ -681,28 +708,43 @@ shrinkPartition() {
             local sizeadd=$(calculate "${percent}/100*${size}/1024")
             sizentfsresize=$(calculate "${size}/1024+${sizeadd}")
             echo " * Possible resize partition size: ${sizentfsresize}k"
-            dots "Running resize test $part"
+            msg="Possible resize partition size: ${sizentfsresize}k"
+            msg_val="T"
+            callBackLog $msg_val $msg
+            msg="Running resize test $part"
+            dots $msg
             yes | ntfsresize -fns ${sizentfsresize}k ${part} >/tmp/tmpoutput.txt 2>&1
             local ntfsstatus="$?"
             tmpoutput=$(cat /tmp/tmpoutput.txt | tr -d \\0)
             test_string=$(cat /tmp/tmpoutput.txt | egrep -io "(ended successfully|bigger than the device size|volume size is already OK)" | tr -d '[[:space:]]' | tr -d \\0)
-            echo "Done"
+            msg_val="Done"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
             rm /tmp/tmpoutput.txt >/dev/null 2>&1
             case $test_string in
                 endedsuccessfully)
                     echo " * Resize test was successful"
+                    msg="Resize test was successful"
+                    msg_val="T"
+                    callBackLog $msg_val $msg
                     do_resizefs=1
                     do_resizepart=1
                     ntfsstatus=0
                     ;;
                 biggerthanthedevicesize)
                     echo " * Not resizing filesystem $part (part too small)"
+                    msg="Not resizing filesystem $part (part too small)"
+                    msg_val="T"
+                    callBackLog $msg_val $msg
                     echo "$(cat ${imagePath}/d1.fixed_size_partitions | tr -d \\0):${part_number}" > "$imagePath/d1.fixed_size_partitions"
                     ntfsstatus=0
                     ;;
                 volumesizeisalreadyOK)
                     echo " * Not resizing filesystem $part (already OK)"
+                    msg="Not resizing filesystem $part (already OK)"
+                    msg_val="T"
+                    callBackLog $msg_val $msg
                     do_resizepart=1
                     ntfsstatus=0
                     ;;
@@ -710,14 +752,19 @@ shrinkPartition() {
             [[ ! $ntfsstatus -eq 0 ]] && handleError "Resize test failed!\n    Info: $tmpoutput\n    (${FUNCNAME[0]})\n    Args Passed: $*"
             if [[ $do_resizefs -eq 1 ]]; then
                 debugPause
-                dots "Resizing filesystem"
+                msg="Resizing filesystem"
+                dots $msg
                 yes | ntfsresize -fs ${sizentfsresize}k ${part} >/tmp/output.txt 2>&1
                 case $? in
                     0)
-                        echo "Done"
+                        msg_val="Done"
+                        echo "$msg_val"
+                        callBackLog $msg_val $msg
                         ;;
                     *)
-                        echo "Failed"
+                        msg_val="Failed"
+                        echo "$msg_val"
+                        callBackLog $msg_val $msg
                         debugPause
                         handleError "Could not resize disk (${FUNCNAME[0]})\n   Info: $(cat /tmp/output.txt)\n   Args Passed: $*"
                         ;;
@@ -725,7 +772,8 @@ shrinkPartition() {
             fi
             if [[ $do_resizepart -eq 1 ]]; then
                 debugPause
-                dots "Resizing partition $part"
+                msg="Resizing partition $part"
+                dots $msg
                 getPartBlockSize "$part" "part_block_size"
                 case $osid in
                     [1-2]|4)
@@ -735,7 +783,9 @@ shrinkPartition() {
                     [5-7]|9)
                         [[ $part_number -eq $win7partcnt ]] && part_start=$(blkid -po udev $part 2>/dev/null | awk -F= '/PART_ENTRY_OFFSET=/{printf("%.0f\n",$2*'$part_block_size'/1000)}') || part_start=1048576
                         if [[ -z $part_start || $part_start -lt 1 ]]; then
-                            echo "Failed"
+                            msg_val="Failed"
+                            echo "$msg_val"
+                            callBackLog $msg_val $msg
                             debugPause
                             handleError "Unable to determine disk start location (${FUNCNAME[0]})\n   Args Passed: $*"
                         fi
@@ -743,19 +793,26 @@ shrinkPartition() {
                         resizePartition "$part" "$adjustedfdsize" "$imagePath"
                         ;;
                 esac
-                echo "Done"
+                msg_val="Done"
+                echo "$msg_val"
+                callBackLog $msg_val $msg
             fi
             resetFlag "$part"
             ;;
         extfs)
-            dots "Checking $fstype volume ($part)"
+            msg="Checking $fstype volume ($part)"
+            dots $msg
             e2fsck -fp $part >/tmp/e2fsck.txt 2>&1
             case $? in
                 0)
-                    echo "Done"
+                    msg_val="Done"
+                    echo "$msg_val"
+                    callBackLog $msg_val $msg
                     ;;
                 *)
-                    echo "Failed"
+                    msg_val="Failed"
+                    echo "$msg_val"
+                    callBackLog $msg_val $msg
                     debugPause
                     handleError "e2fsck failed to check $part (${FUNCNAME[0]})\n   Info: $(cat /tmp/e2fsck.txt)\n   Args Passed: $*"
                     ;;
@@ -767,55 +824,75 @@ shrinkPartition() {
             local sizeadd=$(calculate "${percent}/100*${size}")
             sizeextresize=$(calculate "${size}+${sizeadd}")
             [[ -z $sizeextresize || $sizeextresize -lt 1 ]] && handleError "Error calculating the new size of extfs ($part) (${FUNCNAME[0]})\n   Args Passed: $*"
-            dots "Shrinking $fstype volume ($part)"
+            msg="Shrinking $fstype volume ($part)"
+            dots $msg
             resize2fs $part -M >/tmp/resize2fs.txt 2>&1
             case $? in
                 0)
-                    echo "Done"
+                    msg_val="Done"
+                    echo "$msg_val"
+                    callBackLog $msg_val $msg
                     ;;
                 *)
-                    echo "Failed"
+                    msg_val="Failed"
+                    echo "$msg_val"
+                    callBackLog $msg_val $msg
                     debugPause
                     handleError "Could not shrink $fstype volume ($part) (${FUNCNAME[0]})\n   Info: $(cat /tmp/resize2fs.txt)\n   Args Passed: $*"
                     ;;
             esac
             debugPause
-            dots "Shrinking $part partition"
+            msg="Shrinking $part partition"
+            dots $msg
             resizePartition "$part" "$sizeextresize" "$imagePath"
-            echo "Done"
+            msg_val="Done"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
-            dots "Checking $fstype volume ($part)"
+            msg="Checking $fstype volume ($part)"
+            dots $msg
             e2fsck -fp $part >/tmp/e2fsck.txt 2>&1
             case $? in
                 0)
-                    echo "Done"
+                    msg_val="Done"
+                    echo "$msg_val"
+                    callBackLog $msg_val $msg
                     ;;
                 *)
                     e2fsck -fy $part >>/tmp/e2fsck.txt 2>&1
                     if [[ $? -gt 0 ]]; then
-                        echo "Failed"
+                        msg_val="Failed"
+                        echo "$msg_val"
+                        callBackLog $msg_val $msg
                         debugPause
                         handleError "Could not check expanded volume ($part) (${FUNCNAME[0]})\n   Info: $(cat /tmp/e2fsck.txt)\n   Args Passed: $*"
                     fi
-                    echo "Done"
+                    msg_val="Done"
+                    echo "$msg_val"
+                    callBackLog $msg_val $msg
                     ;;
             esac
             ;;
         btrfs)
             # Based on info from @mstabrin on forums.fogproject.org
             # https://forums.fogproject.org/topic/15159/btrfs-postdownloadscript/3
-            dots "Shrinking $part partition"
+            msg="Shrinking $part partition"
+            dots $msg
             if [[ ! -d /tmp/btrfs ]]; then
                 mkdir /tmp/btrfs >>/tmp/btfrslog.txt 2>&1
                 if [[ $? -gt 0 ]]; then
-                    echo "Failed"
+                    msg_val="Failed"
+                    echo "$msg_val"
+                    callBackLog $msg_val $msg
                     debugPause
                     handleError "Could not create /tmp/btrfs (${FUNCNAME[0]})\n   Info: $(cat /tmp/btrfslog.txt)\n   Args Passed: $*"
                 fi
             fi
             mount -t btrfs $part /tmp/btrfs >>/tmp/btrfslog.txt 2>&1
             if [[ $? -gt 0 ]]; then
-                echo "Failed"
+                msg_val="Failed"
+                echo "$msg_val"
+                callBackLog $msg_val $msg
                 debugPause
                 handleError "Could not mount $part to /tmp/btrfs (${FUNCNAME[0]})\n   Info: $(cat /tmp/btrfslog.txt)\n   Args Passed: $*"
             fi
@@ -829,20 +906,33 @@ shrinkPartition() {
             done
             umount /tmp/btrfs >>/tmp/btrfslog.txt 2>&1
             if [[ $? -gt 0 ]]; then
-                echo "Failed"
+                msg_val="Failed"
+                echo "$msg_val"
+                callBackLog $msg_val $msg
                 debugPause
                 handleError "Could not unmount $part from /tmp/btrfs (${FUNCNAME[0]}\n   Info: $(cat /tmp/btrfslog.txt)\n   Args Passed: $*)"
             fi
-            echo "Done"
+            msg_val="Done"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             ;;
         f2fs)
             echo " * Cannot shrink F2FS partitions"
+            msg="Cannot shrink F2FS partitions"
+            msg_val="T"
+            callBackLog $msg_val $msg
             ;;
         xfs)
             echo " * Cannot shrink XFS partitions"
+            msg="Cannot shrink XFS partitions"
+            msg_val="T"
+            callBackLog $msg_val $msg
             ;;
         *)
             echo " * Not shrinking ($part $fstype)"
+            msg="Not shrinking ($part $fstype)"
+            msg_val="T"
+            callBackLog $msg_val $msg
             ;;
     esac
     debugPause
@@ -857,14 +947,19 @@ resetFlag() {
     fsTypeSetting "$part"
     case $fstype in
         ntfs)
-            dots "Clearing ntfs flag"
+            msg="Clearing ntfs flag"
+            dots $msg
             ntfsfix -b -d $part >/dev/null 2>&1
             case $? in
                 0)
-                    echo "Done"
+                    msg_val="Done"
+                    echo "$msg_val"
+                    callBackLog $msg_val $msg
                     ;;
                 *)
-                    echo "Failed"
+                    msg_val="Failed"
+                    echo "$msg_val"
+                    callBackLog $msg_val $msg
                     ;;
             esac
             ;;
@@ -1288,19 +1383,24 @@ clearMountedDevices() {
             fi
             case $fstype in
                 ntfs)
-                    dots "Clearing part ($part)"
+                    msg="Clearing part ($part)"
+                    dots $msg
                     ntfs-3g -o remove_hiberfile,rw $part /ntfs >/tmp/ntfs-mount-output 2>&1
                     case $? in
                         0)
                             ;;
                         *)
-                            echo "Failed"
+                            msg_val="Failed"
+                            echo "$msg_val"
+                            callBackLog $msg_val $msg
                             debugPause
                             handleError " * Could not mount $part (${FUNCNAME[0]})\n    Args Passed: $*\n    Reason: $(cat /tmp/ntfs-mount-output | tr -d \\0)"
                             ;;
                     esac
                     if [[ ! -f $REG_LOCAL_MACHINE_7 ]]; then
-                        echo "Reg file not found"
+                        msg_val="Reg\ file\ not\ found"
+                        echo "$msg_val"
+                        callBackLog $msg_val $msg
                         debugPause
                         umount /ntfs >/dev/null 2>&1
                         return
@@ -1308,15 +1408,21 @@ clearMountedDevices() {
                     reged -e $REG_LOCAL_MACHINE_7 </usr/share/fog/lib/EOFMOUNT >/dev/null 2>&1
                     case $? in
                         [0-2])
-                            echo "Done"
+                            msg_val="Done"
+                            echo "$msg_val"
+                            callBackLog $msg_val $msg
                             debugPause
                             umount /ntfs >/dev/null 2>&1
                             ;;
                         *)
-                            echo "Failed"
+                            msg_val="Failed"
+                            echo "$msg_val"
+                            callBackLog $msg_val $msg
                             debugPause
                             /umount /ntfs >/dev/null 2>&1
-                            echo " * Could not clear partition $part"
+                            msg="Could not clear partition $part"
+                            msg_val="T"
+                            callBackLog $msg_val $msg
                             return
                             ;;
                     esac
@@ -1338,14 +1444,17 @@ removePageFile() {
         [1-2]|4|[5-7]|[9]|50|51)
             case $fstype in
                 ntfs)
-                    dots "Mounting partition ($part)"
+                    msg="Mounting partition ($part)"
+                    dots $msg
                     if [[ ! -d /ntfs ]]; then
                         mkdir -p /ntfs >/dev/null 2>&1
                         case $? in
                             0)
                                 ;;
                             *)
-                                echo "Failed"
+                                msg_val="Failed"
+                                echo "$msg_val"
+                                callBackLog $msg_val $msg
                                 debugPause
                                 handleError " * Could not create mount location (${FUNCNAME[0]})\n    Args Passed: $*"
                                 ;;
@@ -1355,43 +1464,61 @@ removePageFile() {
                     ntfs-3g -o remove_hiberfile,rw $part /ntfs >/tmp/ntfs-mount-output 2>&1
                     case $? in
                         0)
-                            echo "Done"
+                            msg_val="Done"
+                            echo "$msg_val"
+                            callBackLog $msg_val $msg
                             debugPause
                             ;;
                         *)
-                            echo "Failed"
+                            msg_val="Failed"
+                            echo "$msg_val"
+                            callBackLog $msg_val $msg
                             debugPause
                             handleError " * Could not mount $part (${FUNCNAME[0]})\n    Args Passed: $*\n    Reason: $(cat /tmp/ntfs-mount-output | tr -d \\0)"
                             ;;
                     esac
                     if [[ -f /ntfs/pagefile.sys ]]; then
-                        dots "Removing page file"
+                        msg="Removing page file"
+                        dots $msg
                         rm -rf /ntfs/pagefile.sys >/dev/null 2>&1
                         case $? in
                             0)
-                                echo "Done"
+                                msg_val="Done"
+                                echo "$msg_val"
+                                callBackLog $msg_val $msg
                                 debugPause
                                 ;;
                             *)
-                                echo "Failed"
+                                msg_val="Failed"
+                                echo "$msg_val"
+                                callBackLog $msg_val $msg
                                 debugPause
-                                echo " * Could not delete the page file"
+                                msg="Could not delete the page file"
+                                msg_val="T"
+                                callBackLog $msg_val $msg
                                 ;;
                         esac
                     fi
                     if [[ -f /ntfs/hiberfil.sys ]]; then
-                        dots "Removing hibernate file"
+                        msg="Removing hibernate file"
+                        dots $msg
                         rm -rf /ntfs/hiberfil.sys >/dev/null 2>&1
                         case $? in
                             0)
-                                echo "Done"
+                                msg_val="Done"
+                                echo "$msg_val"
+                                callBackLog $msg_val $msg
                                 debugPause
                                 ;;
                             *)
-                                echo "Failed"
+                                msg_val="Failed"
+                                echo "$msg_val"
+                                callBackLog $msg_val $msg
                                 debugPause
                                 umount /ntfs >/dev/null 2>&1
-                                echo " * Could not delete the hibernate file"
+                                msg="Could not delete the hibernate file"
+                                msg_val="T"
+                                callBackLog $msg_val $msg
                                 ;;
                         esac
                     fi
@@ -1586,6 +1713,7 @@ findHDDInfo() {
     if [[ -z $hd || -z $disks ]]; then
         msg_val="Failed"
         echo "$msg_val"
+        callBackLog $msg_val $msg
         debugPause
         handleError "Could not find hard disk ($0)\n   Args Passed: $*"
     fi
@@ -1618,6 +1746,7 @@ findHDDInfo() {
                         if [[ -z $parts ]]; then
                             msg_val="Failed"
                             echo "$msg_val"
+                            callBackLog $msg_val $msg
                             debugPause
                             handleError "Could not find partitions ($0)\n    Args Passed: $*"
                         fi
@@ -1643,6 +1772,7 @@ findHDDInfo() {
                         if [[ -z $parts ]]; then
                             msg_val="Failed"
                             echo "$msg_val"
+                            callBackLog $msg_val $msg
                             debugPause
                             echo " * No partitions for disk $disk"
                             msg="No partitions for disk $disk"
@@ -2192,22 +2322,29 @@ savePartitionTablesAndBootLoaders() {
             dots "$strdots"
             saveGRUB "$disk" "$disk_number" "$imagePath"
             flock $disk sfdisk -d $disk 2>/dev/null > $sfdiskfilename
-            echo "Done"
+            msg_val="Done"
+            echo "$msg_val"
+            callBackLog $msg_val $strdots
             debugPause
             [[ $have_extended_partition -ge 1 ]] && saveAllEBRs "$disk" "$disk_number" "$imagePath"
             echo "Done"
             ;;
         1)
-            dots "Saving Partition Tables (GPT)"
+            msg="Saving Partition Tables (GPT)"
+            dots $msg
             saveGRUB "$disk" "$disk_number" "$imagePath" "true"
             sgdisk -b "$imagePath/d${disk_number}.mbr" $disk >/dev/null 2>&1
             if [[ ! $? -eq 0 ]]; then
-                echo "Failed"
+                msg_val="Failed"
+                echo "$msg_val"
+                callBackLog $msg_val $msg
                 debugPause
                 handleError "Error trying to save GPT partition tables (${FUNCNAME[0]})\n   Args Passed: $*"
             fi
             flock $disk sfdisk -d $disk 2>/dev/null > $sfdiskfilename
-            echo "Done"
+            msg_val="Done"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             ;;
     esac
     runPartprobe "$disk"
@@ -2257,6 +2394,9 @@ restorePartitionTablesAndBootLoaders() {
     local strdots=""
     if [[ $nombr -eq 1 ]]; then
         echo " * Skipping partition tables and MBR"
+        msg="Skipping partition tables and MBR"
+        msg_val="T"
+        callBackLog $msg_val $msg
         debugPause
         return
     fi
@@ -2356,6 +2496,9 @@ savePartition() {
         return
     fi
     echo " * Processing Partition: $part ($part_number)"
+    msg="Processing Partition: $part ($part_number)"
+    msg_val="T"
+    callBackLog $msg_val $msg
     debugPause
     fsTypeSetting "$part"
     getPartType "$part"
@@ -2364,12 +2507,21 @@ savePartition() {
     case $fstype in
         swap)
             echo " * Saving swap partition UUID"
+            msg="Saving swap partition UUID"
+            msg_val="T"
+            callBackLog $msg_val $msg
             swapUUIDFileName "$imagePath" "$disk_number"
             saveSwapUUID "$swapuuidfilename" "$part"
             ;;
         imager)
             echo " * Using partclone.$fstype"
+            msg="Using partclone.$fstype"
+            msg_val="T"
+            callBackLog $msg_val $msg
             debugPause
+            msg="Image Captured is Processing"
+            msg_val="T"
+            callBackLog $msg_val $msg
             imgpart="$imagePath/d${disk_number}p${part_number}.img"
             uploadFormat "$fifoname" "$imgpart"
             partclone.$fstype -n "Storage Location $storage, Image name $img" -cs $part -O $fifoname -Nf 1
@@ -2378,6 +2530,9 @@ savePartition() {
                 0)
                     mv ${imgpart}.000 $imgpart >/dev/null 2>&1
                     echo " * Image Captured"
+                    msg="Now Image Captured"
+                    msg_val="T"
+                    callBackLog $msg_val $msg
                     debugPause
                     ;;
                 *)
@@ -2390,12 +2545,18 @@ savePartition() {
             case $parttype in
                 0x5|0xf)
                     echo " * Not capturing content of extended partition"
+                    msg="Not capturing content of extended partition"
+                    msg_val="T"
+                    callBackLog $msg_val $msg
                     debugPause
                     EBRFileName "$imagePath" "$disk_number" "$part_number"
                     touch "$ebrfilename"
                     ;;
                 *)
                     echo " * Using partclone.$fstype"
+                    msg="Using partclone.$fstype"
+                    msg_val="T"
+                    callBackLog $msg_val $msg
                     debugPause
                     imgpart="$imagePath/d${disk_number}p${part_number}.img"
                     uploadFormat "$fifoname" "$imgpart"
@@ -2405,6 +2566,9 @@ savePartition() {
                         0)
                             mv ${imgpart}.000 $imgpart >/dev/null 2>&1
                             echo " * Image Captured"
+                            msg="Now Image Captured"
+                            msg_val="T"
+                            callBackLog $msg_val $msg
                             debugPause
                             ;;
                         *)
@@ -2516,14 +2680,19 @@ runFixparts() {
     local disk="$1"
     [[ -z $disk ]] && handleError "No disk passed (${FUNCNAME[0]})\n   Args Passed: $*"
     echo
-    dots "Attempting fixparts"
+    msg="Attempting fixparts"
+    dots $msg
     fixparts $disk </usr/share/fog/lib/EOFFIXPARTS >/dev/null 2>&1
     case $? in
         0)
-            echo "Done"
+            msg_val="Done"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             ;;
         *)
-            echo "Failed"
+            msg_val="Failed"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
             handleError "Could not fix partition layout (${FUNCNAME[0]})\n   Args Passed: $*" "yes"
             ;;
@@ -2532,14 +2701,14 @@ runFixparts() {
     runPartprobe "$disk"
 }
 killStatusReporter() {
-    dots "Stopping FOG Status Reporter"
+#    dots "Stopping FOG Status Reporter"
     kill -9 $statusReporter >/dev/null 2>&1
     case $? in
         0)
-            echo "Done"
+#            echo "Done"
             ;;
         *)
-            echo "Failed"
+#            echo "Failed"
             ;;
     esac
     debugPause
@@ -2557,6 +2726,9 @@ prepareResizeDownloadPartitions() {
     [[ -z $imgPartitionType ]] && handleError "No image partition type  passed (${FUNCNAME[0]})\n   Args Passed: $*"
     if [[ $nombr -eq 1 ]]; then
         echo -e " * Skipping partition preperation\n"
+        msg="Skipping partition preperation"
+        msg_val="T"
+        callBackLog $msg_val $msg
         debugPause
         return
     fi
@@ -2564,14 +2736,19 @@ prepareResizeDownloadPartitions() {
     local do_fill=0
     fillDiskWithPartitionsIsOK "$disk" "$imagePath" "$disk_number"
     majorDebugEcho "Filling disk = $do_fill"
-    dots "Attempting to expand/fill partitions"
+    msg="Attempting to expand/fill partitions"
+    dots $msg
     if [[ $do_fill -eq 0 ]]; then
-        echo "Failed"
+        msg_val="Failed"
+        echo "$msg_val"
+        callBackLog $msg_val $msg
         debugPause
         handleError "Fatal Error: Could not resize partitions (${FUNCNAME[0]})\n   Args Passed: $*"
     fi
     fillDiskWithPartitions "$disk" "$imagePath" "$disk_number"
-    echo "Done"
+    msg_val="Done"
+    echo "$msg_val"
+    callBackLog $msg_val $msg
     debugPause
     runPartprobe "$disk"
 }

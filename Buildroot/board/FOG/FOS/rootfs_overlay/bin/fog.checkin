@@ -71,6 +71,7 @@ checkin() {
         if [[ $res != "##@GO" ]]; then
             local msg_val="Failed"
             echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
             echo -n " * $res (In line for "
             sec2string "$waittime"

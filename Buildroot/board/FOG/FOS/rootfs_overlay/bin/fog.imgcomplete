@@ -1,5 +1,8 @@
 #!/bin/bash
 echo " * Task Complete"
+msg="Task Complete"
+msg_val="T"
+callBackLog $msg_val $msg
 sysuuid=$(dmidecode -s system-uuid)
 sysuuid=${sysuuid,,}
 case $type in
@@ -24,6 +27,7 @@ while [[ $res != "##" ]]; do
     if [[ $res != "##" && $count -lt 10 ]]; then
         msg_val="Failed"
         echo "$msg_val"
+        callBackLog $msg_val $msg
         debugPause
         printf " * Error returned: %s" "$res"
         echo
@@ -35,6 +39,7 @@ while [[ $res != "##" ]]; do
         msg_val="Failed"
         echo "$msg_val"
         debugPause
+        callBackLog $msg_val $msg
         printf " * Error returned: %s" "$res"
         echo
         debugPause
