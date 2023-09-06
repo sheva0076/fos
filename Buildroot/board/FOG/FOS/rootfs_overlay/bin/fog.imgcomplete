@@ -20,8 +20,9 @@ case $type in
 esac
 count=0
 res=""
-msg="Updating Database"
-dots $msg
+msg_en="Updating Database"
+msg="检查操作系统"
+dots $msg_en
 while [[ $res != "##" ]]; do
     res=$(curl -Lks --data "$poststring" ${web}service/$php_post 2>/dev/null)
     if [[ $res != "##" && $count -lt 10 ]]; then
@@ -32,8 +33,9 @@ while [[ $res != "##" ]]; do
         printf " * Error returned: %s" "$res"
         echo
         debugPause
-        msg="Reattempting to update database"
-        dots $msg
+        msg_en="Reattempting to update database"
+        msg="检查操作系统"
+        dots $msg_en
     fi
     if [[ $count -ge 10 ]]; then
         msg_val="Failed"

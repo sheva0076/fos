@@ -2,8 +2,9 @@
 umount /ntfs >/dev/null 2>&1
 umount /images >/dev/null 2>&1
 umount /bcdstore >/dev/null 2>&1
-msg="Mounting File System"
-dots $msg
+msg_en="Mounting File System"
+msg="挂载文件系统"
+dots $msg_en
 if [[ ! -d /images ]]; then
     mkdir -p /images >/dev/null 2>&1
     if [[ ! $? -eq 0 ]]; then

@@ -87,8 +87,9 @@ poststring="mac=${mac}&sysman=${sysman64}&sysproduct=${sysproduct64}&sysversion=
 count=0
 res=""
 while [[ -z $res ]]; do
-    msg="Attempting to send inventory"
-    dots $msg
+    msg_en="Attempting to send inventory"
+    msg="尝试发送硬件信息"
+    dots $msg_en
     res=$(curl -Lks --data "$poststring" ${web}service/inventory.php 2>/dev/null)
     if [[ $count -ge 10 ]]; then
         msg_val="Failed"

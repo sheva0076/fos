@@ -39,8 +39,9 @@ restoreUUIDInformation() {
     hasGPT "$disk"
     [[ $hasgpt -eq 0 ]] && return
     diskuuid=$(awk '/^label-id: / {print tolower($2)}' $file)
-    msg="Disk UUID being set to"
-    dots $msg
+    msg_en="Disk UUID being set to"
+    msg="磁盘 UUID 设置为"
+    dots $msg_en
     callBackLog $diskuuid $msg
     echo $diskuuid
     debugPause
@@ -55,8 +56,9 @@ restoreUUIDInformation() {
         [[ $is_swap -gt 0 ]] && continue
         partuuid=$(awk -F[,\ ] "match(\$0, /${part_number} : start=.*uuid=([A-Za-z0-9-]+)[,]?.*$/, type){printf(\"%s:%s\", $part_number, tolower(type[1]))}" $file)
         parttype=$(awk -F[,\ ] "match(\$0, /${part_number} : start=.*type=([A-Za-z0-9-]+)[,]?.*$/, type){printf(\"%s:%s\", $part_number, tolower(type[1]))}" $file)
-        msg="Partition type being set to"
-        dots $msg
+        msg_en="Partition type being set to"
+        msg="分区类型设置为"
+        dots $msg_en
         callBackLog $parttype $msg
         echo $parttype
         debugPause
@@ -66,8 +68,9 @@ restoreUUIDInformation() {
             true
         fi
         [[ ! $? -eq 0 ]] && handleWarning " Failed to set partition type (sgdisk -t) (${FUNCNAME[0]})\n   Args Passed: $*"
-        msg="Partition uuid being set to"
-        dots $msg
+        msg_en="Partition uuid being set to"
+        msg="分区 uuid 设置为"
+        dots $msg_en
         callBackLog $partuuid $msg
         echo $partuuid
         debugPause
@@ -655,8 +658,9 @@ saveOriginalPartitions() {
             callBackLog $msg_val $msg
             debugPause
             runFixparts "$disk"
-            msg="Retrying to save partition table"
-            dots $msg
+            msg_en="Retrying to save partition table"
+            msg="重试保存分区表"
+            dots $msg_en
             saveOriginalPartitions "$disk" "$imagePath" "$disk_number" $msg
             ;;
         *)

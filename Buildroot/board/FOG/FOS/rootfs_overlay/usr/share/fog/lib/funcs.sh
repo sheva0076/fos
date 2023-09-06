@@ -90,8 +90,9 @@ getMACTypes() {
 }
 # Verifies that there is a network interface
 verifyNetworkConnection() {
-    local msg="Verifying network interface configuration"
-    dots $msg
+    local msg_en="Verifying network interface configuration"
+    msg="验证网络接口配置"
+    dots $msg_en
     local count=$(/sbin/ip addr | awk -F'[ /]+' '/global/{print $3}' | wc -l)
     if [[ -z $count || $count -lt 1 ]]; then
         local msg_val="Failed"
@@ -193,8 +194,9 @@ enableWriteCache()  {
         debugPause
         return
     fi
-    msg="Enabling write cache"
-    dots $msg
+    msg_en="Enabling write cache"
+    msg="启用写入缓存"
+    dots $msg_en
     hdparm -W1 $disk >/dev/null 2>&1
     case $? in
         0)
@@ -228,7 +230,7 @@ expandPartition() {
     local is_fixed=$(echo $fixed | awk "/(^$part_number:|:$part_number:|:$part_number$|^$part_number$)/{print 1}")
     if [[ $is_fixed -eq 1 ]]; then
         echo " * Not expanding ($part) fixed size"
-        msg="Not expanding ($part) fixed size"
+        msg="不扩展 ($part) 的固定大小"
         msg_val="T"
         callBackLog $msg_val $msg
         debugPause
@@ -238,8 +240,9 @@ expandPartition() {
     fsTypeSetting $part
     case $fstype in
         ntfs)
-            msg="Resizing $fstype volume ($part)"
-            dots $msg
+            msg_en="Resizing $fstype volume ($part)"
+            msg="调整 $fstype 卷大小 ($part)"
+            dots $msg_en
             yes | ntfsresize $part -fbP >/tmp/tmpoutput.txt 2>&1
             case $? in
                 0)
@@ -259,8 +262,9 @@ expandPartition() {
             resetFlag "$part"
             ;;
         extfs)
-            msg="Resizing $fstype volume ($part)"
-            dots $msg
+            msg_en="Resizing $fstype volume ($part)"
+            msg="调整 $fstype 卷大小 ($part)"
+            dots $msg_en
             e2fsck -fp $part >/tmp/e2fsck.txt 2>&1
             case $? in
                 0)
@@ -311,8 +315,9 @@ expandPartition() {
             ;;
         btrfs)
             # Based on info from @mstabrin on forums.fogproject.org
-            msg="Resizing $fstype volume ($part)"
-            dots $msg
+            msg_en="Resizing $fstype volume ($part)"
+            msg="调整 $fstype 卷大小 ($part)"
+            dots $msg_en
             if [[ ! -d /tmp/btrfs ]]; then
                 mkdir /tmp/btrfs >>/tmp/btfrslog.txt 2>&1
                 if [[ $? -gt 0 ]]; then
@@ -353,8 +358,9 @@ expandPartition() {
             ;;
         f2fs)
             if [[ $type == "down" ]]; then
-                msg="Resizing $fstype volume ($part)"
-                dots $msg
+                msg_en="Resizing $fstype volume ($part)"
+                msg="调整 $fstype 卷大小 ($part)"
+                dots $msg_en
                 resize.f2fs $part >>/tmp/resize.f2fs.txt 2>&1
                 if [[ $? -gt 0 ]]; then
                     msg_val="Failed"
@@ -370,8 +376,9 @@ expandPartition() {
             ;;
         xfs)
             if [[ $type == "down" ]]; then
-                msg="Attempting to resize $fstype volume ($part)"
-                dots $msg
+                msg_en="Attempting to resize $fstype volume ($part)"
+                msg="尝试调整 $fstype 卷大小 ($part)"
+                dots $msg_en
                 # XFS partitions can only be expanded when there is free space after that partition.
                 # Retrieving the partition number of a XFS partition that has free space after it.
                 local xfsPartitionNumberThatCanBeExpanded=$(parted -s -a opt $disk "print free" | grep -i "free space" -B 1 | grep -i "xfs" | cut -d ' ' -f2)
@@ -430,7 +437,7 @@ expandPartition() {
             ;;
         *)
             echo " * Not expanding ($part -- $fstype)"
-            msg="Not expanding ($part -- $fstype)"
+            msg="不扩展 ($part -- $fstype)"
             msg_val="T"
             callBackLog $msg_val $msg
             debugPause
@@ -565,8 +572,9 @@ getServerDiskSpaceSvailable() {
 prepareUploadLocation() {
     local imagePath="$1"
     [[ -z $imagePath ]] && handleError "No image path passed (${FUNCNAME[0]})\n   Args Passed: $*"
-    msg="Preparing backup location"
-    dots $msg
+    msg_en="Preparing backup location"
+    msg="准备备份位置"
+    dots $msg_en
     if [[ ! -d $imagePath ]]; then
         mkdir -p $imagePath >/dev/null 2>&1
         case $? in
@@ -586,8 +594,9 @@ prepareUploadLocation() {
     echo "$msg_val"
     callBackLog $msg_val $msg
     debugPause
-    msg="Setting permission on $imagePath"
-    dots $msg
+    msg_en="Setting permission on $imagePath"
+    msg="$imagePath 设置权限"
+    dots $msg_en
     chmod -R 777 $imagePath >/dev/null 2>&1
     case $? in
         0)
@@ -604,8 +613,9 @@ prepareUploadLocation() {
     esac
     callBackLog $msg_val $msg
     debugPause
-    msg="Removing any pre-existing files"
-    dots $msg
+    msg_en="Removing any pre-existing files"
+    msg="删除任何预先存在的文件"
+    dots $msg_en
     rm -Rf $imagePath/* >/dev/null 2>&1
     case $? in
         0)
@@ -645,7 +655,7 @@ movePartition() {
     currPartStart=$(grep "$part" $tmp_file1 | cut -d',' -f1 | awk -F'=' '{print $2}' | tr -d ' ')
     if [[ $currPartStart -gt $newStart ]]; then
         echo " * Moving $part forward to close gap between end of $prevPart and start of $part."
-        msg="Moving $part forward to close gap between end of $prevPart and start of $part."
+        msg="向前移动 $part 以缩小 $prevPart 结尾与 $part 开头之间的间隙"
         msg_val="T"
         callBackLog $msg_val $msg
         debugPause
@@ -679,7 +689,7 @@ shrinkPartition() {
     local is_fixed=$(echo $fixed | awk "/(^$part_number:|:$part_number:|:$part_number$|^$part_number$)/{print 1}")
     if [[ $is_fixed -eq 1 ]]; then
         echo " * Not shrinking ($part) as it is detected as fixed size"
-        msg="Not shrinking ($part) as it is detected as fixed size"
+        msg="不缩小 ($part) 因为它被检测为固定大小"
         msg_val="T"
         callBackLog $msg_val $msg
         debugPause
@@ -706,7 +716,7 @@ shrinkPartition() {
             ntfsresize -fivP $part >/tmp/tmpoutput.txt 2>&1
             if [[ ! $? -eq 0 ]]; then
                 echo " * Not shrinking ($part) trying fixed size"
-                msg="Not shrinking ($part) trying fixed size"
+                msg="不缩小 ($part) 尝试固定大小"
                 msg_val="T"
                 callBackLog $msg_val $msg
                 debugPause
@@ -721,11 +731,12 @@ shrinkPartition() {
             local sizeadd=$(calculate "${percent}/100*${size}/1024")
             sizentfsresize=$(calculate "${size}/1024+${sizeadd}")
             echo " * Possible resize partition size: ${sizentfsresize}k"
-            msg="Possible resize partition size: ${sizentfsresize}k"
+            msg="可调整的分区大小: ${sizentfsresize}k"
             msg_val="T"
             callBackLog $msg_val $msg
-            msg="Running resize test $part"
-            dots $msg
+            msg_en="Running resize test $part"
+            msg="运行调整大小测试 $part"
+            dots $msg_en
             yes | ntfsresize -fns ${sizentfsresize}k ${part} >/tmp/tmpoutput.txt 2>&1
             local ntfsstatus="$?"
             tmpoutput=$(cat /tmp/tmpoutput.txt | tr -d \\0)
@@ -738,7 +749,7 @@ shrinkPartition() {
             case $test_string in
                 endedsuccessfully)
                     echo " * Resize test was successful"
-                    msg="Resize test was successful"
+                    msg="调整大小测试成功"
                     msg_val="T"
                     callBackLog $msg_val $msg
                     do_resizefs=1
@@ -747,7 +758,7 @@ shrinkPartition() {
                     ;;
                 biggerthanthedevicesize)
                     echo " * Not resizing filesystem $part (part too small)"
-                    msg="Not resizing filesystem $part (part too small)"
+                    msg="未调整文件系统 $part 的大小(大小不够调整)"
                     msg_val="T"
                     callBackLog $msg_val $msg
                     echo "$(cat ${imagePath}/d1.fixed_size_partitions | tr -d \\0):${part_number}" > "$imagePath/d1.fixed_size_partitions"
@@ -755,7 +766,7 @@ shrinkPartition() {
                     ;;
                 volumesizeisalreadyOK)
                     echo " * Not resizing filesystem $part (already OK)"
-                    msg="Not resizing filesystem $part (already OK)"
+                    msg="未调整文件系统 $part (已经可以)"
                     msg_val="T"
                     callBackLog $msg_val $msg
                     do_resizepart=1
@@ -765,8 +776,9 @@ shrinkPartition() {
             [[ ! $ntfsstatus -eq 0 ]] && handleError "Resize test failed!\n    Info: $tmpoutput\n    (${FUNCNAME[0]})\n    Args Passed: $*"
             if [[ $do_resizefs -eq 1 ]]; then
                 debugPause
-                msg="Resizing filesystem"
-                dots $msg
+                msg_en="Resizing filesystem"
+                msg="调整文件系统大小"
+                dots $msg_en
                 yes | ntfsresize -fs ${sizentfsresize}k ${part} >/tmp/output.txt 2>&1
                 case $? in
                     0)
@@ -785,8 +797,9 @@ shrinkPartition() {
             fi
             if [[ $do_resizepart -eq 1 ]]; then
                 debugPause
-                msg="Resizing partition $part"
-                dots $msg
+                msg_en="Resizing partition $part"
+                msg="调整分区大小 $part"
+                dots $msg_en
                 getPartBlockSize "$part" "part_block_size"
                 case $osid in
                     [1-2]|4)
@@ -813,8 +826,9 @@ shrinkPartition() {
             resetFlag "$part"
             ;;
         extfs)
-            msg="Checking $fstype volume ($part)"
-            dots $msg
+            msg_en="Checking $fstype volume ($part)"
+            msg="检查 $fstype 卷大小 ($part)"
+            dots $msg_en
             e2fsck -fp $part >/tmp/e2fsck.txt 2>&1
             case $? in
                 0)
@@ -837,8 +851,9 @@ shrinkPartition() {
             local sizeadd=$(calculate "${percent}/100*${size}")
             sizeextresize=$(calculate "${size}+${sizeadd}")
             [[ -z $sizeextresize || $sizeextresize -lt 1 ]] && handleError "Error calculating the new size of extfs ($part) (${FUNCNAME[0]})\n   Args Passed: $*"
-            msg="Shrinking $fstype volume ($part)"
-            dots $msg
+            msg_en="Shrinking $fstype volume ($part)"
+            msg="缩小 $fstype 卷大小 ($part)"
+            dots $msg_en
             resize2fs $part -M >/tmp/resize2fs.txt 2>&1
             case $? in
                 0)
@@ -855,15 +870,17 @@ shrinkPartition() {
                     ;;
             esac
             debugPause
-            msg="Shrinking $part partition"
-            dots $msg
+            msg_en="Shrinking $part partition"
+            msg="检查操作系统"
+            dots $msg_en
             resizePartition "$part" "$sizeextresize" "$imagePath"
             msg_val="Done"
             echo "$msg_val"
             callBackLog $msg_val $msg
             debugPause
-            msg="Checking $fstype volume ($part)"
-            dots $msg
+            msg_en="Checking $fstype volume ($part)"
+            msg="检查操作系统"
+            dots $msg_en
             e2fsck -fp $part >/tmp/e2fsck.txt 2>&1
             case $? in
                 0)
@@ -889,8 +906,9 @@ shrinkPartition() {
         btrfs)
             # Based on info from @mstabrin on forums.fogproject.org
             # https://forums.fogproject.org/topic/15159/btrfs-postdownloadscript/3
-            msg="Shrinking $part partition"
-            dots $msg
+            msg_en="Shrinking $part partition"
+            msg="检查操作系统"
+            dots $msg_en
             if [[ ! -d /tmp/btrfs ]]; then
                 mkdir /tmp/btrfs >>/tmp/btfrslog.txt 2>&1
                 if [[ $? -gt 0 ]]; then
@@ -931,19 +949,19 @@ shrinkPartition() {
             ;;
         f2fs)
             echo " * Cannot shrink F2FS partitions"
-            msg="Cannot shrink F2FS partitions"
+            msg="无法收缩 F2FS 分区"
             msg_val="T"
             callBackLog $msg_val $msg
             ;;
         xfs)
             echo " * Cannot shrink XFS partitions"
-            msg="Cannot shrink XFS partitions"
+            msg="无法收缩 XFS 分区"
             msg_val="T"
             callBackLog $msg_val $msg
             ;;
         *)
             echo " * Not shrinking ($part $fstype)"
-            msg="Not shrinking ($part $fstype)"
+            msg="无法收缩 ($part $fstype)"
             msg_val="T"
             callBackLog $msg_val $msg
             ;;
@@ -960,8 +978,9 @@ resetFlag() {
     fsTypeSetting "$part"
     case $fstype in
         ntfs)
-            msg="Clearing ntfs flag"
-            dots $msg
+            msg_en="Clearing ntfs flag"
+            msg="检查操作系统"
+            dots $msg_en
             ntfsfix -b -d $part >/dev/null 2>&1
             case $? in
                 0)
@@ -1183,8 +1202,9 @@ changeHostname() {
     REG_HOSTNAME_KEY18="\CurrentControlSet\services\Tcpip\Parameters\Hostname"
     REG_HOSTNAME_KEY19="\CurrentControlSet\services\Tcpip\Parameters\NV HostName"
     REG_HOSTNAME_KEY20="\CurrentControlSet\services\Tcpip\Parameters\HostName"
-    msg="Mounting directory"
-    dots $msg
+    msg_en="Mounting directory"
+    msg="检查操作系统"
+    dots $msg_en
     if [[ ! -d /ntfs ]]; then
         mkdir -p /ntfs >/dev/null 2>&1
         if [[ ! $? -eq 0 ]]; then
@@ -1286,8 +1306,9 @@ changeHostname() {
         echo >> /usr/share/fog/lib/EOFREG
     fi
     if [[ -e $regfile ]]; then
-        msg="Changing hostname"
-        dots $msg
+        msg_en="Changing hostname"
+        msg="检查操作系统"
+        dots $msg_en
         reged -e $regfile < /usr/share/fog/lib/EOFREG >/dev/null 2>&1
         case $? in
             [0-2])
@@ -1412,8 +1433,9 @@ clearMountedDevices() {
             fi
             case $fstype in
                 ntfs)
-                    msg="Clearing part ($part)"
-                    dots $msg
+                    msg_en="Clearing part ($part)"
+                    msg="检查操作系统"
+                    dots $msg_en
                     ntfs-3g -o remove_hiberfile,rw $part /ntfs >/tmp/ntfs-mount-output 2>&1
                     case $? in
                         0)
@@ -1473,8 +1495,9 @@ removePageFile() {
         [1-2]|4|[5-7]|[9]|50|51)
             case $fstype in
                 ntfs)
-                    msg="Mounting partition ($part)"
-                    dots $msg
+                    msg_en="Mounting partition ($part)"
+                    msg="检查操作系统"
+                    dots $msg_en
                     if [[ ! -d /ntfs ]]; then
                         mkdir -p /ntfs >/dev/null 2>&1
                         case $? in
@@ -1507,8 +1530,9 @@ removePageFile() {
                             ;;
                     esac
                     if [[ -f /ntfs/pagefile.sys ]]; then
-                        msg="Removing page file"
-                        dots $msg
+                        msg_en="Removing page file"
+                        msg="检查操作系统"
+                        dots $msg_en
                         rm -rf /ntfs/pagefile.sys >/dev/null 2>&1
                         case $? in
                             0)
@@ -1529,8 +1553,9 @@ removePageFile() {
                         esac
                     fi
                     if [[ -f /ntfs/hiberfil.sys ]]; then
-                        msg="Removing hibernate file"
-                        dots $msg
+                        msg_en="Removing hibernate file"
+                        msg="检查操作系统"
+                        dots $msg_en
                         rm -rf /ntfs/hiberfil.sys >/dev/null 2>&1
                         case $? in
                             0)
@@ -1736,8 +1761,9 @@ getHardDisk() {
 }
 # Finds the hard drive info and set's up the type
 findHDDInfo() {
-    msg="Looking for Hard Disk(s)"
-    dots $msg
+    msg_en="Looking for Hard Disk(s)"
+    msg="检查操作系统"
+    dots $msg_en
     getHardDisk
     if [[ -z $hd || -z $disks ]]; then
         msg_val="Failed"
@@ -1764,8 +1790,9 @@ findHDDInfo() {
                     enableWriteCache "$hd"
                     ;;
                 up)
-                    msg="Reading Partition Tables"
-                    dots $msg
+                    msg_en="Reading Partition Tables"
+                    msg="检查操作系统"
+                    dots $msg_en
                     if [[ $imgType == "dd" ]]; then
                         msg_val="Skipped"
                         echo "$msg_val"
@@ -1795,8 +1822,9 @@ findHDDInfo() {
             case $type in
                 up)
                     for disk in $disks; do
-                        msg="Reading Partition Tables on $disk"
-                        dots $msg
+                        msg_en="Reading Partition Tables on $disk"
+                        msg="检查操作系统"
+                        dots $msg_en
                         getPartitions "$disk"
                         if [[ -z $parts ]]; then
                             msg_val="Failed"
@@ -2359,8 +2387,9 @@ savePartitionTablesAndBootLoaders() {
             echo "Done"
             ;;
         1)
-            msg="Saving Partition Tables (GPT)"
-            dots $msg
+            msg_en="Saving Partition Tables (GPT)"
+            msg="检查操作系统"
+            dots $msg_en
             saveGRUB "$disk" "$disk_number" "$imagePath" "true"
             sgdisk -b "$imagePath/d${disk_number}.mbr" $disk >/dev/null 2>&1
             if [[ ! $? -eq 0 ]]; then
@@ -2383,8 +2412,9 @@ clearPartitionTables() {
     local disk="$1"
     [[ -z $disk ]] && handleError "No disk passed (${FUNCNAME[0]})\n   Args Passed: $*"
     [[ $nombr -eq 1 ]] && return
-    msg="Erasing current MBR/GPT Tables"
-    dots $msg
+    msg_en="Erasing current MBR/GPT Tables"
+    msg="检查操作系统"
+    dots $msg_en
     sgdisk -Z $disk >/dev/null 2>&1
     case $? in
         0)
@@ -2446,8 +2476,9 @@ restorePartitionTablesAndBootLoaders() {
     getDesiredPartitionTableType "$imagePath" "$disk_number"
     majorDebugEcho "Trying to restore to $table_type partition table."
     if [[ $table_type == GPT ]]; then
-        msg="Restoring Partition Tables (GPT)"
-        dots $msg
+        msg_en="Restoring Partition Tables (GPT)"
+        msg="检查操作系统"
+        dots $msg_en
         restoreGRUB "$disk" "$disk_number" "$imagePath" "true"
         sgdisk -z $disk >/dev/null 2>&1
         sgdisk -gl $tmpMBR $disk >/tmp/sgdisk-gl.err 2>&1
@@ -2493,8 +2524,9 @@ restorePartitionTablesAndBootLoaders() {
         sfdiskPartitionFileName "$imagePath" "$disk_number"
         sfdiskLegacyOriginalPartitionFileName "$imagePath" "$disk_number"
         if [[ -r $sfdiskoriginalpartitionfilename ]]; then
-            msg="Inserting Extended partitions (Original)"
-            dots $msg
+            msg_en="Inserting Extended partitions (Original)"
+            msg="检查操作系统"
+            dots $msg_en
             flock $disk sfdisk $disk < $sfdiskoriginalpartitionfilename >/dev/null 2>&1
             case $? in
                 0)
@@ -2509,8 +2541,9 @@ restorePartitionTablesAndBootLoaders() {
                     ;;
             esac
         elif [[ -e $sfdisklegacyoriginalpartitionfilename ]]; then
-            msg="Inserting Extended partitions (Legacy)"
-            dots $msg
+            msg_en="Inserting Extended partitions (Legacy)"
+            msg="检查操作系统"
+            dots $msg_en
             flock $disk sfdisk $disk < $sfdisklegacyoriginalpartitionfilename >/dev/null 2>&1
             case $? in
                 0)
@@ -2742,8 +2775,9 @@ runFixparts() {
     local disk="$1"
     [[ -z $disk ]] && handleError "No disk passed (${FUNCNAME[0]})\n   Args Passed: $*"
     echo
-    msg="Attempting fixparts"
-    dots $msg
+    msg_en="Attempting fixparts"
+    msg="检查操作系统"
+    dots $msg_en
     fixparts $disk </usr/share/fog/lib/EOFFIXPARTS >/dev/null 2>&1
     case $? in
         0)
@@ -2798,8 +2832,9 @@ prepareResizeDownloadPartitions() {
     local do_fill=0
     fillDiskWithPartitionsIsOK "$disk" "$imagePath" "$disk_number"
     majorDebugEcho "Filling disk = $do_fill"
-    msg="Attempting to expand/fill partitions"
-    dots $msg
+    msg_en="Attempting to expand/fill partitions"
+    msg="检查操作系统"
+    dots $msg_en
     if [[ $do_fill -eq 0 ]]; then
         msg_val="Failed"
         echo "$msg_val"
