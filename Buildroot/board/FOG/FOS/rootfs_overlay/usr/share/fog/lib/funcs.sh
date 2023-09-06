@@ -67,7 +67,7 @@ callBackLog()  {
 dotTitle()  {
     local msg_val="T"
     local msg="$*"
-    printf "$msg"
+    echo "$msg"
     escaped_string="${msg/\*/\\*}"
     callBackLog $msg_val $escaped_string
 }
@@ -1035,25 +1035,29 @@ writeImage()  {
     case $format in
         5|6)
             # ZSTD Compressed image.
-            echo " * Imaging using Partclone (zstd)"
+            dotTitle " * Imaging using Partclone (zstd)"
+            dotTitle " * Image Deploy is Processing"
             zstdmt -dc </tmp/pigz1 | partclone.restore -n "Storage Location $storage, Image name $img" --ignore_crc -O ${target} -Nf 1
             ;;
         3|4)
             # Uncompressed partclone
-            echo " * Imaging using Partclone (uncompressed)"
+            dotTitle " * Imaging using Partclone (uncompressed)"
+            dotTitle " * Image Deploy is Processing"
             cat </tmp/pigz1 | partclone.restore -n "Storage Location $storage, Image name $img" --ignore_crc -O ${target} -Nf 1
             # If this fails, try from compressed form.
             #[[ ! $? -eq 0 ]] && zstdmt -dc </tmp/pigz1 | partclone.restore --ignore_crc -O ${target} -N -f 1 || true
             ;;
         1)
             # Partimage
-            echo " * Imaging using Partimage (gzip)"
+            dotTitle " * Imaging using Partimage (gzip)"
+            dotTitle " * Image Deploy is Processing"
             #zstdmt -dc </tmp/pigz1 | partimage restore ${target} stdin -f3 -b 2>/tmp/status.fog
             pigz -dc </tmp/pigz1 | partimage restore ${target} stdin -f3 -b 2>/tmp/status.fog
             ;;
         0|2)
             # GZIP Compressed partclone
-            echo " * Imaging using Partclone (gzip)"
+            dotTitle " * Imaging using Partclone (gzip)"
+            dotTitle " * Image Deploy is Processing"
             #zstdmt -dc </tmp/pigz1 | partclone.restore -n "Storage Location $storage, Image name $img" --ignore_crc -O ${target} -N -f 1
             pigz -dc </tmp/pigz1 | partclone.restore -n "Storage Location $storage, Image name $img" --ignore_crc -O ${target} -N -f 1
             # If this fails, try uncompressed form.
@@ -1179,11 +1183,14 @@ changeHostname() {
     REG_HOSTNAME_KEY18="\CurrentControlSet\services\Tcpip\Parameters\Hostname"
     REG_HOSTNAME_KEY19="\CurrentControlSet\services\Tcpip\Parameters\NV HostName"
     REG_HOSTNAME_KEY20="\CurrentControlSet\services\Tcpip\Parameters\HostName"
-    dots "Mounting directory"
+    msg="Mounting directory"
+    dots $msg
     if [[ ! -d /ntfs ]]; then
         mkdir -p /ntfs >/dev/null 2>&1
         if [[ ! $? -eq 0 ]]; then
-            echo "Failed"
+            msg_val="Failed"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
             handleError " * Could not create mount location (${FUNCNAME[0]})\n    Args Passed: $*"
         fi
@@ -1192,11 +1199,15 @@ changeHostname() {
     ntfs-3g -o remove_hiberfile,rw $part /ntfs >/tmp/ntfs-mount-output 2>&1
     case $? in
         0)
-            echo "Done"
+            msg_val="Done"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
             ;;
         *)
-            echo "Failed"
+            msg_val="Failed"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
             handleError " * Could not mount $part (${FUNCNAME[0]})\n    Args Passed: $*\n    Reason: $(cat /tmp/ntfs-mount-output | tr -d \\0)"
             ;;
@@ -1275,18 +1286,23 @@ changeHostname() {
         echo >> /usr/share/fog/lib/EOFREG
     fi
     if [[ -e $regfile ]]; then
-        dots "Changing hostname"
+        msg="Changing hostname"
+        dots $msg
         reged -e $regfile < /usr/share/fog/lib/EOFREG >/dev/null 2>&1
         case $? in
             [0-2])
-                echo "Done"
+                msg_val="Done"
+                echo "$msg_val"
+                callBackLog $msg_val $msg
                 debugPause
                 ;;
             *)
-                echo "Failed"
+                msg_val="Failed"
+                echo "$msg_val"
+                callBackLog $msg_val $msg
                 debugPause
                 umount /ntfs >/dev/null 2>&1
-                echo " * Failed to change hostname"
+                dotTitle " * Failed to change hostname"
                 return
                 ;;
         esac
@@ -1765,11 +1781,11 @@ findHDDInfo() {
                         fi
                         msg_val="Done"
                         echo "$msg_val"
+                        callBackLog $msg_val $msg
                     fi
                     debugPause
                     ;;
             esac
-            callBackLog $msg_val $msg
             echo " * Using Hard Disk: $hd"
             msg="Using Hard Disk: $hd"
             msg_val="T"

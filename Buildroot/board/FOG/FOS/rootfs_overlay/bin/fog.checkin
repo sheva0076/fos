@@ -1,5 +1,4 @@
 #!/bin/bash
-# -*- coding: utf-8 -*-
 . /usr/share/fog/lib/funcs.sh
 RUN_CHKDSK=""
 HOSTNAME_EARLY=0
@@ -40,7 +39,7 @@ case $mc in
 esac
 debugPause
 verifyNetworkConnection
-msg="检查操作系统"
+msg="Checking Operating System"
 dots $msg
 [[ -z $deployed ]] && determineOS "$osid"
 if [[ $osname == *" "* ]]; then
@@ -49,7 +48,7 @@ fi
 msg_val=$newosname
 echo "$osname"
 callBackLog "$msg_val" $msg
-msg="检测CPU核数"
+msg="Checking CPU Cores"
 dots $msg
 cores=$(nproc)
 msg_val=$cores
