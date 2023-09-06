@@ -63,6 +63,14 @@ callBackLog()  {
     local poststring="sysuuid=${newsysuuid}&mac=${mac}&message=$msg&messageval=$msg_val"
     res=$(curl -Lks --data "$poststring" ${web}service/Post_Data.php 2>/dev/null)
 }
+
+dotTitle()  {
+    local msg_val="T"
+    local msg="$*"
+    printf "$msg"
+    escaped_string="${msg/\*/\\*}"
+    callBackLog $msg_val $escaped_string
+}
 # Gets all system mac addresses except for loopback
 #getMACAddresses() {
 #    read ifaces <<< $(/usr/sbin/lshw -c network -json | jq -s '.[] | .logicalname' | tr -d '"' | tr '[:space:]' '|' | sed 's/[|]$//g')
@@ -181,18 +189,23 @@ enableWriteCache()  {
     [[ -z $disk ]] && handleError "No disk passed (${FUNCNAME[0]})\n   Args Passed: $*"
     wcache=$(hdparm -W $disk 2>/dev/null | tr -d '[[:space:]]' | awk -F= '/.*write-caching=/{print $2}')
     if [[ -z $wcache || $wcache == notsupported ]]; then
-        echo " * Write caching not supported"
+        dotTitle " * Write caching not supported"
         debugPause
         return
     fi
-    dots "Enabling write cache"
+    msg="Enabling write cache"
+    dots $msg
     hdparm -W1 $disk >/dev/null 2>&1
     case $? in
         0)
-            echo "Enabled"
+            msg_val="Enabled"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             ;;
         *)
-            echo "Failed"
+            msg_val="Failed"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
             handleWarning "Could not set caching status (${FUNCNAME[0]})"
             return
@@ -1399,8 +1412,8 @@ clearMountedDevices() {
                     esac
                     if [[ ! -f $REG_LOCAL_MACHINE_7 ]]; then
                         msg_val="Reg\ file\ not\ found"
-                        echo "$msg_val"
-                        callBackLog $msg_val $msg
+                        echo "Reg file not found"
+                        callBackLog "$msg_val" $msg
                         debugPause
                         umount /ntfs >/dev/null 2>&1
                         return
@@ -2354,17 +2367,24 @@ clearPartitionTables() {
     local disk="$1"
     [[ -z $disk ]] && handleError "No disk passed (${FUNCNAME[0]})\n   Args Passed: $*"
     [[ $nombr -eq 1 ]] && return
-    dots "Erasing current MBR/GPT Tables"
+    msg="Erasing current MBR/GPT Tables"
+    dots $msg
     sgdisk -Z $disk >/dev/null 2>&1
     case $? in
         0)
-            echo "Done"
+            msg_val="Done"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             ;;
         2)
-            echo "Done, but cleared corrupted partition."
+            msg_val="Done, but cleared corrupted partition."
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             ;;
         *)
-            echo "Failed"
+            msg_val="Failed"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
             handleError "Error trying to erase partition tables (${FUNCNAME[0]})\n   Args Passed: $*"
             ;;
@@ -2410,21 +2430,29 @@ restorePartitionTablesAndBootLoaders() {
     getDesiredPartitionTableType "$imagePath" "$disk_number"
     majorDebugEcho "Trying to restore to $table_type partition table."
     if [[ $table_type == GPT ]]; then
-        dots "Restoring Partition Tables (GPT)"
+        msg="Restoring Partition Tables (GPT)"
+        dots $msg
         restoreGRUB "$disk" "$disk_number" "$imagePath" "true"
         sgdisk -z $disk >/dev/null 2>&1
         sgdisk -gl $tmpMBR $disk >/tmp/sgdisk-gl.err 2>&1
         sgdiskexit="$?"
         if [[ ! $sgdiskexit -eq 0 ]]; then
-            echo "Failed"
+            msg_val="Failed"
+            echo "$msg_val"
+            callBackLog $msg_val $msg
             debugPause
             [[ -r /tmp/sgdisk-gl.err ]] && cat /tmp/sgdisk-gl.err
             echo "Find the detailed error message above this line. Use Shift-PageUp to scroll upwards."
+            msg="Find the detailed error message above this line. Use Shift-PageUp to scroll upwards."
+            msg_val="T"
+            callBackLog $msg_val $msg
             handleError "Error trying to restore GPT partition tables (${FUNCNAME[0]})\n   Args Passed: $*\n    CMD Tried: sgdisk -gl $tmpMBR $disk\n    Exit returned code: $sgdiskexit"
         fi
         rm -f /tmp/sgdisk-gl.err
         global_gptcheck="yes"
-        echo "Done"
+        msg_val="Done"
+        echo "$msg_val"
+        callBackLog $msg_val $msg
     else
         case $osid in
             50|51)
@@ -2436,7 +2464,9 @@ restorePartitionTablesAndBootLoaders() {
         esac
         dots "$strdots"
         restoreGRUB "$disk" "$disk_number" "$imagePath"
-        echo "Done"
+        msg_val="Done"
+        echo "$msg_val"
+        callBackLog $msg_val $strdots
         debugPause
         majorDebugShowCurrentPartitionTable "$disk" "$disk_number"
         majorDebugPause
@@ -2447,29 +2477,42 @@ restorePartitionTablesAndBootLoaders() {
         sfdiskPartitionFileName "$imagePath" "$disk_number"
         sfdiskLegacyOriginalPartitionFileName "$imagePath" "$disk_number"
         if [[ -r $sfdiskoriginalpartitionfilename ]]; then
-            dots "Inserting Extended partitions (Original)"
+            msg="Inserting Extended partitions (Original)"
+            dots $msg
             flock $disk sfdisk $disk < $sfdiskoriginalpartitionfilename >/dev/null 2>&1
             case $? in
                 0)
-                    echo "Done"
+                    msg_val="Done"
+                    echo "$msg_val"
+                    callBackLog $msg_val $msg
                     ;;
                 *)
-                    echo "Failed"
+                    msg_val="Failed"
+                    echo "$msg_val"
+                    callBackLog $msg_val $msg
                     ;;
             esac
         elif [[ -e $sfdisklegacyoriginalpartitionfilename ]]; then
-            dots "Inserting Extended partitions (Legacy)"
+            msg="Inserting Extended partitions (Legacy)"
+            dots $msg
             flock $disk sfdisk $disk < $sfdisklegacyoriginalpartitionfilename >/dev/null 2>&1
             case $? in
                 0)
-                    echo "Done"
+                    msg_val="Done"
+                    echo "$msg_val"
+                    callBackLog $msg_val $msg
                     ;;
                 *)
-                    echo "Failed"
+                    msg_val="Failed"
+                    echo "$msg_val"
+                    callBackLog $msg_val $msg
                     ;;
             esac
         else
             echo " * No extended partitions"
+            msg="No extended partitions"
+            msg_val="T"
+            callBackLog $msg_val $msg
         fi
     fi
     debugPause
@@ -2530,7 +2573,7 @@ savePartition() {
                 0)
                     mv ${imgpart}.000 $imgpart >/dev/null 2>&1
                     echo " * Image Captured"
-                    msg="Now Image Captured"
+                    msg="Image Captured"
                     msg_val="T"
                     callBackLog $msg_val $msg
                     debugPause
@@ -2558,6 +2601,9 @@ savePartition() {
                     msg_val="T"
                     callBackLog $msg_val $msg
                     debugPause
+                    msg="Image Captured is Processing"
+                    msg_val="T"
+                    callBackLog $msg_val $msg
                     imgpart="$imagePath/d${disk_number}p${part_number}.img"
                     uploadFormat "$fifoname" "$imgpart"
                     partclone.$fstype -n "Storage Location $storage, Image name $img" -cs $part -O $fifoname -Nf 1 -a0
@@ -2566,7 +2612,7 @@ savePartition() {
                         0)
                             mv ${imgpart}.000 $imgpart >/dev/null 2>&1
                             echo " * Image Captured"
-                            msg="Now Image Captured"
+                            msg="Image Captured"
                             msg_val="T"
                             callBackLog $msg_val $msg
                             debugPause
@@ -2595,7 +2641,7 @@ restorePartition() {
     [[ -z $disk_number ]] && handleError "No disk number passed (${FUNCNAME[0]})\n   Args Passed: $*"
     [[ -z $imagePath ]] && handleError "No image path passed (${FUNCNAME[0]})\n   Args Passed: $*"
     if [[ $imgPartitionType != all && $imgPartitionType != $part_number ]]; then
-        echo " * Skipping partition: $part ($part_number)"
+        dotTitle " * Skipping partition: $part ($part_number)"
         debugPause
         return
     fi
@@ -2609,7 +2655,7 @@ restorePartition() {
     fi
     getDiskFromPartition "$part" "$israw"
     getPartitionNumber "$part"
-    echo " * Processing Partition: $part ($part_number)"
+    dotTitle " * Processing Partition: $part ($part_number)"
     debugPause
     case $imgType in
         dd)
@@ -2668,7 +2714,7 @@ restorePartition() {
     ls $imgpart >/dev/null 2>&1
     if [[ ! $? -eq 0 ]]; then
         EBRFileName "$imagePath" "$disk_number" "$part_number"
-        [[ -e $ebrfilename ]] && echo " * Not deploying content of extended partition" || echo " * Partition File Missing: $imgpart"
+        [[ -e $ebrfilename ]] && dotTitle " * Not deploying content of extended partition" || dotTitle " * Partition File Missing: $imgpart"
         runPartprobe "$disk"
         return
     fi
@@ -2785,9 +2831,15 @@ performRestore() {
         done
         restoreparts=""
         echo " * Resetting UUIDs for $disk"
+        msg="Resetting UUIDs for $disk"
+        msg_val="T"
+        callBackLog $msg_val $msg
         debugPause
         restoreUUIDInformation "$disk" "$sfdiskoriginalpartitionfilename" "$disk_number" "$imagePath"
         echo " * Resetting swap systems"
+        msg="Resetting swap systems"
+        msg_val="T"
+        callBackLog $msg_val $msg
         debugPause
         makeAllSwapSystems "$disk" "$disk_number" "$imagePath" "$imgPartitionType"
         let disk_number+=1

@@ -39,7 +39,9 @@ restoreUUIDInformation() {
     hasGPT "$disk"
     [[ $hasgpt -eq 0 ]] && return
     diskuuid=$(awk '/^label-id: / {print tolower($2)}' $file)
-    dots "Disk UUID being set to"
+    msg="Disk UUID being set to"
+    dots $msg
+    callBackLog $diskuuid $msg
     echo $diskuuid
     debugPause
     if [[ -n $diskuuid ]]; then
@@ -53,7 +55,9 @@ restoreUUIDInformation() {
         [[ $is_swap -gt 0 ]] && continue
         partuuid=$(awk -F[,\ ] "match(\$0, /${part_number} : start=.*uuid=([A-Za-z0-9-]+)[,]?.*$/, type){printf(\"%s:%s\", $part_number, tolower(type[1]))}" $file)
         parttype=$(awk -F[,\ ] "match(\$0, /${part_number} : start=.*type=([A-Za-z0-9-]+)[,]?.*$/, type){printf(\"%s:%s\", $part_number, tolower(type[1]))}" $file)
-        dots "Partition type being set to"
+        msg="Partition type being set to"
+        dots $msg
+        callBackLog $parttype $msg
         echo $parttype
         debugPause
         if [[ -n $parttype ]]; then
@@ -62,7 +66,9 @@ restoreUUIDInformation() {
             true
         fi
         [[ ! $? -eq 0 ]] && handleWarning " Failed to set partition type (sgdisk -t) (${FUNCNAME[0]})\n   Args Passed: $*"
-        dots "Partition uuid being set to"
+        msg="Partition uuid being set to"
+        dots $msg
+        callBackLog $partuuid $msg
         echo $partuuid
         debugPause
         if [[ -n $partuuid ]]; then

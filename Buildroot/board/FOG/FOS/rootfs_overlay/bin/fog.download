@@ -43,34 +43,52 @@ preparePartitions() {
                     else
                         startsector="63s"
                         restorePartitionTablesAndBootLoaders "$hd" 1 "$imagePath" "$osid" "$imgPartitionType"
-                        dots "Removing partition"
+                        msg="Removing partition"
+                        dots $msg
                         parted -s $hd rm 1 >/dev/null 2>&1
                         if [[ ! $? -eq 0 ]]; then
-                            echo "Failed"
+                            msg_val="Failed"
+                            echo "$msg_val"
+                            callBackLog $msg_val $msg
                             debugPause
                             handleError "Fatal Error: Could not remove old partition ($0)\n   Args Passed: $*"
                         fi
-                        echo "Done"
+                        msg_val="Done"
+                        echo "$msg_val"
+                        callBackLog $msg_val $msg
                         debugPause
                         echo " * Attempting to expand/fill partitions"
-                        dots "Recreating partition"
+                        msg="Attempting to expand/fill partitions"
+                        msg_val="T"
+                        callBackLog $msg_val $msg
+                        msg="Recreating partition"
+                        dots $msg
                         parted -s $hd mkpart primary ntfs 63s -- $layPartSize >/dev/null 2>&1
                         if [[ ! $? -eq 0 ]]; then
-                            echo "Failed"
+                            msg_val="Failed"
+                            echo "$msg_val"
+                            callBackLog $msg_val $msg
                             debugPause
                             handleError "Could not create partition to fill disk ($0)\n   Args Passed: $*"
                         fi
-                        echo "Done"
+                        msg_val="Done"
+                        echo "$msg_val"
+                        callBackLog $msg_val $msg
                         debugPause
-                        dots "Setting boot partition"
+                        msg="Setting boot partition"
+                        dots $msg
                         parted -s $hd set 1 boot on >/dev/null 2>&1
                         if [[ ! $? -eq 0 ]]; then
-                            echo "Failed"
+                            msg_val="Failed"
+                            echo "$msg_val"
+                            callBackLog $msg_val $msg
                             debugPause
                             handleError "Fatal Error: Could not make partition bootable ($0)\n   Args Passed: $*"
                         fi
                         runPartprobe "$hd"
-                        echo "Done"
+                        msg_val="Done"
+                        echo "$msg_val"
+                        callBackLog $msg_val $msg
                         debugPause
                         getPartitions "$hd"
                         for part in $parts; do
@@ -88,17 +106,28 @@ preparePartitions() {
                         prepareResizeDownloadPartitions "$hd" 1 "$imagePath" "$osid" "$imgPartitionType"
                     else
                         echo " * Using legacy style partition setup"
+                        msg="Using legacy style partition setup"
+                        msg_val="T"
+                        callBackLog $msg_val $msg
                         win7partcnt=1
-                        dots "Windows Boot Partition Exists"
+                        msg="Windows Boot Partition Exists"
+                        dots $msg
                         if [[ ! -f $imagePath/gpt.bak && ! -f $imagePath/rec1.img.000 && ! -f $imagePath/rec.img.000 ]]; then
-                            echo "No"
+                                msg_val="No"
+                                echo "$msg_val"
+                                callBackLog $msg_val $msg
                         else
-                            echo "Yes"
+                            msg_val="Yes"
+                            echo "$msg_val"
+                            callBackLog $msg_val $msg
                             [[ -f $imagePath/rec.img.000 ]] && win7partcnt=2
                             [[ -f $imagePath/rec.img.001 || -f $imagePath/gpt.bak ]] && win7partcnt=3
                         fi
                         debugPause
                         echo " * Attempting to expand/fill partitions"
+                        msg="Attempting to expand/fill partitions"
+                        msg_val="T"
+                        callBackLog $msg_val $msg
                         do_fill=0
                         fillDiskWithPartitionsIsOK "$hd" "$imagePath" 1
                         case $do_fill in
@@ -110,96 +139,142 @@ preparePartitions() {
                                 restorePartitionTablesAndBootLoaders "$hd" 1 "$imagePath" "$osid" "$imgPartitionType"
                                 case $win7partcnt in
                                     1)
-                                        dots "Removing partition"
+                                        msg="Removing partition"
+                                        dots $msg
                                         parted -s $hd rm 1 >/dev/null 2>&1
                                         if [[ ! $? -eq 0 ]]; then
-                                            echo "Failed"
+                                            msg_val="Failed"
+                                            echo "$msg_val"
+                                            callBackLog $msg_val $msg
                                             debugPause
                                             handleError "Fatal Error: Could not remove old partition ($0)\n   Args Passed: $*"
                                         fi
-                                        echo "Done"
+                                        msg_val="Done"
+                                        echo "$msg_val"
+                                        callBackLog $msg_val $msg
                                         debugPause
-                                        dots "Creating main partition"
+                                        msg="Creating main partition"
+                                        dots $msg
                                         parted -s $hd mkpart primary ntfs $startsector -- $layPartSize >/dev/null 2>&1
                                         if [[ ! $? -eq 0 ]]; then
-                                            echo "Failed"
+                                            msg_val="Failed"
+                                            echo "$msg_val"
+                                            callBackLog $msg_val $msg
                                             debugPause
                                             handleError "Fatal Error: Could not recreate first partition ($0)\n   Args Passed: $*"
                                         fi
-                                        echo "Done"
+                                        msg_val="Done"
+                                        echo "$msg_val"
+                                        callBackLog $msg_val $msg
                                         debugPause
-                                        dots "Setting boot partition"
+                                        msg="Setting boot partition"
+                                        dots $msg
                                         parted -s $hd set 1 boot on >/dev/null 2>&1
                                         if [[ ! $? -eq 0 ]]; then
-                                            echo "Failed"
+                                            msg_val="Failed"
+                                            echo "$msg_val"
+                                            callBackLog $msg_val $msg
                                             debugPause
                                             handleError "Fatal Error: Could not make partition bootable ($0)\n   Args Passed: $*"
                                         fi
-                                        echo "Done"
+                                        msg_val="Done"
+                                        echo "$msg_val"
+                                        callBackLog $msg_val $msg
                                         ;;
                                     2)
-                                        dots "Removing main partition"
+                                        msg="Removing main partition"
+                                        dots $msg
                                         parted -s $hd rm 1 >/dev/null 2>&1
                                         if [[ ! $? -eq 0 ]]; then
-                                            echo "Failed"
+                                            msg_val="Failed"
+                                            echo "$msg_val"
+                                            callBackLog $msg_val $msg
                                             debugPause
                                             handleError "Fatal Error: Could not remove old main partition ($0)\n    Args Passed: $*"
                                         fi
-                                        echo "Done"
+                                        msg_val="Done"
+                                        echo "$msg_val"
+                                        callBackLog $msg_val $msg
                                         debugPause
-                                        dots "Recreating recovery partition"
+                                        msg="Recreating recovery partition"
+                                        dots $msg
                                         parted -s $hd mkpart primary ntfs $startsector 206847s >/dev/null 2>&1
                                         if [[ ! $? -eq 0 ]]; then
-                                            echo "Failed"
+                                            msg_val="Failed"
+                                            echo "$msg_val"
+                                            callBackLog $msg_val $msg
                                             debugPause
                                             handleError "Fatal Error: Could not create recovery partition ($0)\n    Args Passed: $*"
                                         fi
-                                        echo "Done"
+                                        msg_val="Done"
+                                        echo "$msg_val"
+                                        callBackLog $msg_val $msg
                                         debugPause
-                                        dots "Recreating main partition"
+                                        msg="Recreating main partition"
+                                        dots $msg
                                         parted -s $hd mkpart primary ntfs $defaultpart2start -- $layPartSize >/dev/null 2>&1
                                         if [[ ! $? -eq 0 ]]; then
-                                            echo "Failed"
+                                            msg_val="Failed"
+                                            echo "$msg_val"
+                                            callBackLog $msg_val $msg
                                             debugPause
                                             handleError "Fatal Error: Could not recreate main partition ($0)\n   Args Passed: $*"
                                         fi
-                                        echo "Done"
+                                        msg_val="Done"
+                                        echo "$msg_val"
+                                        callBackLog $msg_val $msg
                                         debugPause
-                                        dots "Setting boot partition"
+                                        msg="Setting boot partition"
+                                        dots $msg
                                         parted -s $hd set 1 boot on >/dev/null 2>&1
                                         if [[ ! $? -eq 0 ]]; then
-                                            echo "Failed"
+                                            msg_val="Failed"
+                                            echo "$msg_val"
+                                            callBackLog $msg_val $msg
                                             debugPause
                                             handleError "Fatal Error: Could not make partition bootable ($0)\nArgsPassed: $*"
                                         fi
-                                        echo "Done"
+                                        msg_val="Done"
+                                        echo "$msg_val"
+                                        callBackLog $msg_val $msg
                                         ;;
                                     3)
-                                        dots "Removing partition data"
+                                        msg="Removing partition data"
+                                        dots $msg
                                         sgdisk -Z $hd >/dev/null 2>&1
                                         sgdisk -gl $imagePath/gpt.bak $hd >/dev/null 2>&1
                                         if [[ ! $? -eq 0 ]]; then
-                                            echo "Failed"
+                                            msg_val="Failed"
+                                            echo "$msg_val"
+                                            callBackLog $msg_val $msg
                                             debugPause
                                             handleError "Fatal Error: Could not recreate partitions ($0)\n   Args Passed: $*"
                                         fi
-                                        echo "Done"
+                                        msg_val="Done"
+                                        echo "$msg_val"
+                                        callBackLog $msg_val $msg
                                         debugPause
-                                        dots "Recreating sized out partitions"
+                                        msg="Recreating sized out partitions"
+                                        dots $msg
                                         sgdisk -x 3:$(sgdisk -E $hd) $hd >/dev/null 2>&1
                                         if [[ ! $? -eq 0 ]]; then
-                                            echo "Failed"
+                                            msg_val="Failed"
+                                            echo "$msg_val"
+                                            callBackLog $msg_val $msg
                                             debugPause
                                             handleError "Fatal Error: Could not resize partitions ($0)\n   Args Passed: $*"
                                         fi
-                                        echo "Done"
+                                        msg_val="Done"
+                                        echo "$msg_val"
+                                        callBackLog $msg_val $msg
                                         ;;
                                 esac
                                 ;;
                         esac
                         debugPause
                         runPartprobe "$hd"
-                        dots "Setting up partition variables"
+                        msg="Setting up partition variables"
+                        dots $msg
                         getPartitions "$hd"
                         restoreparts=""
                         part_number=0
@@ -207,7 +282,9 @@ preparePartitions() {
                             getPartitionNumber "$part"
                             [[ $part_number -le $win7partcnt ]] && restoreparts="$restoreparts $part"
                         done
-                        echo "Done"
+                        msg_val="Done"
+                        echo "$msg_val"
+                        callBackLog $msg_val $msg
                         debugPause
                     fi
                     ;;
@@ -263,24 +340,6 @@ putDataBack() {
     esac
 }
 findHDDInfo
-
-if [ $nombr -eq 1 ]; then
-  echo " * Skipping partition layout (Single Partition restore)"
-  msg="Skipping partition layout (Single Partition restore)"
-  msg_val="T"
-  callBackLog $msg_val $msg
-else
-  preparePartitions
-fi
-
-if [ "$imgPartitionType" != "mbr" ]; then
-  putDataBack
-else
-  echo " * Skipping partition restore (MBR Only)"
-  msg="Skipping partition restore (MBR Only)"
-  msg_val="T"
-  callBackLog $msg_val $msg
-fi
-
-
+[[ $nombr -eq 1 ]] && dotTitle " * Skipping partition layout (Single Partition restore)" || preparePartitions
+[[ $imgPartitionType != mbr ]] && putDataBack || dotTitle " * Skipping partition restore (MBR Only)"
 completeTasking
