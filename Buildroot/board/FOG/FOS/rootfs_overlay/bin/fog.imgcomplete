@@ -1,6 +1,6 @@
 #!/bin/bash
 echo " * Task Complete"
-msg="Task Complete"
+msg="任务完成"
 msg_val="T"
 callBackLog $msg_val $msg
 sysuuid=$(dmidecode -s system-uuid)
@@ -21,7 +21,7 @@ esac
 count=0
 res=""
 msg_en="Updating Database"
-msg="检查操作系统"
+msg="更新数据库"
 dots $msg_en
 while [[ $res != "##" ]]; do
     res=$(curl -Lks --data "$poststring" ${web}service/$php_post 2>/dev/null)
@@ -34,7 +34,7 @@ while [[ $res != "##" ]]; do
         echo
         debugPause
         msg_en="Reattempting to update database"
-        msg="检查操作系统"
+        msg="重新尝试更新数据库"
         dots $msg_en
     fi
     if [[ $count -ge 10 ]]; then

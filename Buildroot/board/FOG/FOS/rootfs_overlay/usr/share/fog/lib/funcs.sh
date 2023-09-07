@@ -66,8 +66,9 @@ callBackLog()  {
 
 dotTitle()  {
     local msg_val="T"
-    local msg="$*"
-    echo "$msg"
+    local msg="$1"
+    local msg_en="${*:2}"
+    echo "$msg_en"
     escaped_string="${msg/\*/\\*}"
     callBackLog $msg_val $escaped_string
 }
@@ -190,7 +191,10 @@ enableWriteCache()  {
     [[ -z $disk ]] && handleError "No disk passed (${FUNCNAME[0]})\n   Args Passed: $*"
     wcache=$(hdparm -W $disk 2>/dev/null | tr -d '[[:space:]]' | awk -F= '/.*write-caching=/{print $2}')
     if [[ -z $wcache || $wcache == notsupported ]]; then
-        dotTitle " * Write caching not supported"
+        echo " * Write caching not supported"
+        msg="不支持写入缓存"
+        msg_val="T"
+        callBackLog $msg_val $msg
         debugPause
         return
     fi
@@ -871,7 +875,7 @@ shrinkPartition() {
             esac
             debugPause
             msg_en="Shrinking $part partition"
-            msg="检查操作系统"
+            msg="缩小 $part 分区"
             dots $msg_en
             resizePartition "$part" "$sizeextresize" "$imagePath"
             msg_val="Done"
@@ -879,7 +883,7 @@ shrinkPartition() {
             callBackLog $msg_val $msg
             debugPause
             msg_en="Checking $fstype volume ($part)"
-            msg="检查操作系统"
+            msg="检查 $fstype 卷 ($part)"
             dots $msg_en
             e2fsck -fp $part >/tmp/e2fsck.txt 2>&1
             case $? in
@@ -907,7 +911,7 @@ shrinkPartition() {
             # Based on info from @mstabrin on forums.fogproject.org
             # https://forums.fogproject.org/topic/15159/btrfs-postdownloadscript/3
             msg_en="Shrinking $part partition"
-            msg="检查操作系统"
+            msg="缩小 $part 分区"
             dots $msg_en
             if [[ ! -d /tmp/btrfs ]]; then
                 mkdir /tmp/btrfs >>/tmp/btfrslog.txt 2>&1
@@ -979,7 +983,7 @@ resetFlag() {
     case $fstype in
         ntfs)
             msg_en="Clearing ntfs flag"
-            msg="检查操作系统"
+            msg="清除ntfs标志"
             dots $msg_en
             ntfsfix -b -d $part >/dev/null 2>&1
             case $? in
@@ -1054,29 +1058,53 @@ writeImage()  {
     case $format in
         5|6)
             # ZSTD Compressed image.
-            dotTitle " * Imaging using Partclone (zstd)"
-            dotTitle " * Image Deploy is Processing"
+            echo " * Imaging using Partclone (zstd)"
+            msg="使用Partclone (zstd)处理镜像"
+            msg_val="T"
+            callBackLog $msg_val $msg
+            echo " * Image Deploy is Processing"
+            msg="镜像正在部署中"
+            msg_val="T"
+            callBackLog $msg_val $msg
             zstdmt -dc </tmp/pigz1 | partclone.restore -n "Storage Location $storage, Image name $img" --ignore_crc -O ${target} -Nf 1
             ;;
         3|4)
             # Uncompressed partclone
-            dotTitle " * Imaging using Partclone (uncompressed)"
-            dotTitle " * Image Deploy is Processing"
+            echo " * Imaging using Partclone (uncompressed)"
+            msg="使用Partclone (uncompressed)处理镜像"
+            msg_val="T"
+            callBackLog $msg_val $msg
+            echo " * Image Deploy is Processing"
+            msg="镜像正在部署中"
+            msg_val="T"
+            callBackLog $msg_val $msg
             cat </tmp/pigz1 | partclone.restore -n "Storage Location $storage, Image name $img" --ignore_crc -O ${target} -Nf 1
             # If this fails, try from compressed form.
             #[[ ! $? -eq 0 ]] && zstdmt -dc </tmp/pigz1 | partclone.restore --ignore_crc -O ${target} -N -f 1 || true
             ;;
         1)
             # Partimage
-            dotTitle " * Imaging using Partimage (gzip)"
-            dotTitle " * Image Deploy is Processing"
+            echo " * Imaging using Partimage (gzip)"
+            msg="使用Partimage(gzip)处理镜像"
+            msg_val="T"
+            callBackLog $msg_val $msg
+            echo " * Image Deploy is Processing"
+            msg="镜像正在部署中"
+            msg_val="T"
+            callBackLog $msg_val $msg
             #zstdmt -dc </tmp/pigz1 | partimage restore ${target} stdin -f3 -b 2>/tmp/status.fog
             pigz -dc </tmp/pigz1 | partimage restore ${target} stdin -f3 -b 2>/tmp/status.fog
             ;;
         0|2)
             # GZIP Compressed partclone
-            dotTitle " * Imaging using Partclone (gzip)"
-            dotTitle " * Image Deploy is Processing"
+            echo " * Imaging using Partclone (gzip)"
+            msg="使用Partclone (gzip)处理镜像"
+            msg_val="T"
+            callBackLog $msg_val $msg
+            echo " * Image Deploy is Processing"
+            msg="镜像正在部署中"
+            msg_val="T"
+            callBackLog $msg_val $msg
             #zstdmt -dc </tmp/pigz1 | partclone.restore -n "Storage Location $storage, Image name $img" --ignore_crc -O ${target} -N -f 1
             pigz -dc </tmp/pigz1 | partclone.restore -n "Storage Location $storage, Image name $img" --ignore_crc -O ${target} -N -f 1
             # If this fails, try uncompressed form.
@@ -1203,7 +1231,7 @@ changeHostname() {
     REG_HOSTNAME_KEY19="\CurrentControlSet\services\Tcpip\Parameters\NV HostName"
     REG_HOSTNAME_KEY20="\CurrentControlSet\services\Tcpip\Parameters\HostName"
     msg_en="Mounting directory"
-    msg="检查操作系统"
+    msg="挂载目录"
     dots $msg_en
     if [[ ! -d /ntfs ]]; then
         mkdir -p /ntfs >/dev/null 2>&1
@@ -1307,7 +1335,7 @@ changeHostname() {
     fi
     if [[ -e $regfile ]]; then
         msg_en="Changing hostname"
-        msg="检查操作系统"
+        msg="更改主机名"
         dots $msg_en
         reged -e $regfile < /usr/share/fog/lib/EOFREG >/dev/null 2>&1
         case $? in
@@ -1323,7 +1351,10 @@ changeHostname() {
                 callBackLog $msg_val $msg
                 debugPause
                 umount /ntfs >/dev/null 2>&1
-                dotTitle " * Failed to change hostname"
+                echo " * Failed to change hostname"
+                msg="更改主机名失败"
+                msg_val="T"
+                callBackLog $msg_val $msg
                 return
                 ;;
         esac
@@ -1434,7 +1465,7 @@ clearMountedDevices() {
             case $fstype in
                 ntfs)
                     msg_en="Clearing part ($part)"
-                    msg="检查操作系统"
+                    msg="清理部分 ($part)"
                     dots $msg_en
                     ntfs-3g -o remove_hiberfile,rw $part /ntfs >/tmp/ntfs-mount-output 2>&1
                     case $? in
@@ -1449,7 +1480,7 @@ clearMountedDevices() {
                             ;;
                     esac
                     if [[ ! -f $REG_LOCAL_MACHINE_7 ]]; then
-                        msg_val="Reg\ file\ not\ found"
+                        msg_val="未找到注册表文件"
                         echo "Reg file not found"
                         callBackLog "$msg_val" $msg
                         debugPause
@@ -1471,7 +1502,7 @@ clearMountedDevices() {
                             callBackLog $msg_val $msg
                             debugPause
                             /umount /ntfs >/dev/null 2>&1
-                            msg="Could not clear partition $part"
+                            msg="无法清除分区 $part"
                             msg_val="T"
                             callBackLog $msg_val $msg
                             return
@@ -1496,7 +1527,7 @@ removePageFile() {
             case $fstype in
                 ntfs)
                     msg_en="Mounting partition ($part)"
-                    msg="检查操作系统"
+                    msg="挂载分区 ($part)"
                     dots $msg_en
                     if [[ ! -d /ntfs ]]; then
                         mkdir -p /ntfs >/dev/null 2>&1
@@ -1531,7 +1562,7 @@ removePageFile() {
                     esac
                     if [[ -f /ntfs/pagefile.sys ]]; then
                         msg_en="Removing page file"
-                        msg="检查操作系统"
+                        msg="删除页面文件"
                         dots $msg_en
                         rm -rf /ntfs/pagefile.sys >/dev/null 2>&1
                         case $? in
@@ -1546,7 +1577,7 @@ removePageFile() {
                                 echo "$msg_val"
                                 callBackLog $msg_val $msg
                                 debugPause
-                                msg="Could not delete the page file"
+                                msg="无法删除页面文件"
                                 msg_val="T"
                                 callBackLog $msg_val $msg
                                 ;;
@@ -1554,7 +1585,7 @@ removePageFile() {
                     fi
                     if [[ -f /ntfs/hiberfil.sys ]]; then
                         msg_en="Removing hibernate file"
-                        msg="检查操作系统"
+                        msg="删除休眠文件"
                         dots $msg_en
                         rm -rf /ntfs/hiberfil.sys >/dev/null 2>&1
                         case $? in
@@ -1570,7 +1601,7 @@ removePageFile() {
                                 callBackLog $msg_val $msg
                                 debugPause
                                 umount /ntfs >/dev/null 2>&1
-                                msg="Could not delete the hibernate file"
+                                msg="无法删除休眠文件"
                                 msg_val="T"
                                 callBackLog $msg_val $msg
                                 ;;
@@ -1762,7 +1793,7 @@ getHardDisk() {
 # Finds the hard drive info and set's up the type
 findHDDInfo() {
     msg_en="Looking for Hard Disk(s)"
-    msg="检查操作系统"
+    msg="寻找硬盘"
     dots $msg_en
     getHardDisk
     if [[ -z $hd || -z $disks ]]; then
@@ -1783,7 +1814,7 @@ findHDDInfo() {
                     diskSize=$(lsblk --bytes -dplno SIZE -I 3,8,9,179,259 $hd)
                     [[ $diskSize -gt 2199023255552 ]] && layPartSize="2tB"
                     echo " * Using Disk: $hd"
-                    msg="Using Disk: $hd"
+                    msg="使用磁盘: $hd"
                     msg_val="T"
                     callBackLog $msg_val $msg
                     [[ $imgType == +([nN]) ]] && validResizeOS
@@ -1791,7 +1822,7 @@ findHDDInfo() {
                     ;;
                 up)
                     msg_en="Reading Partition Tables"
-                    msg="检查操作系统"
+                    msg="读取分区表"
                     dots $msg_en
                     if [[ $imgType == "dd" ]]; then
                         msg_val="Skipped"
@@ -1814,7 +1845,7 @@ findHDDInfo() {
                     ;;
             esac
             echo " * Using Hard Disk: $hd"
-            msg="Using Hard Disk: $hd"
+            msg="使用硬盘: $hd"
             msg_val="T"
             callBackLog $msg_val $msg
             ;;
@@ -1823,7 +1854,7 @@ findHDDInfo() {
                 up)
                     for disk in $disks; do
                         msg_en="Reading Partition Tables on $disk"
-                        msg="检查操作系统"
+                        msg="读取 $disk 上的分区表"
                         dots $msg_en
                         getPartitions "$disk"
                         if [[ -z $parts ]]; then
@@ -1832,7 +1863,7 @@ findHDDInfo() {
                             callBackLog $msg_val $msg
                             debugPause
                             echo " * No partitions for disk $disk"
-                            msg="No partitions for disk $disk"
+                            msg="磁盘没有分区 $disk"
                             msg_val="T"
                             callBackLog $msg_val $msg
                             debugPause
@@ -1846,7 +1877,7 @@ findHDDInfo() {
             esac
             callBackLog $msg_val $msg
             echo " * Using Hard Disks: $disks"
-            msg="Using Hard Disks: $disks"
+            msg="使用硬盘: $disks"
             msg_val="T"
             callBackLog $msg_val $msg
             ;;
@@ -2388,7 +2419,7 @@ savePartitionTablesAndBootLoaders() {
             ;;
         1)
             msg_en="Saving Partition Tables (GPT)"
-            msg="检查操作系统"
+            msg="保存分区表 (GPT)"
             dots $msg_en
             saveGRUB "$disk" "$disk_number" "$imagePath" "true"
             sgdisk -b "$imagePath/d${disk_number}.mbr" $disk >/dev/null 2>&1
@@ -2413,7 +2444,7 @@ clearPartitionTables() {
     [[ -z $disk ]] && handleError "No disk passed (${FUNCNAME[0]})\n   Args Passed: $*"
     [[ $nombr -eq 1 ]] && return
     msg_en="Erasing current MBR/GPT Tables"
-    msg="检查操作系统"
+    msg="擦除当前 MBR/GPT 表"
     dots $msg_en
     sgdisk -Z $disk >/dev/null 2>&1
     case $? in
@@ -2460,7 +2491,7 @@ restorePartitionTablesAndBootLoaders() {
     local strdots=""
     if [[ $nombr -eq 1 ]]; then
         echo " * Skipping partition tables and MBR"
-        msg="Skipping partition tables and MBR"
+        msg="跳过分区表和 MBR"
         msg_val="T"
         callBackLog $msg_val $msg
         debugPause
@@ -2477,7 +2508,7 @@ restorePartitionTablesAndBootLoaders() {
     majorDebugEcho "Trying to restore to $table_type partition table."
     if [[ $table_type == GPT ]]; then
         msg_en="Restoring Partition Tables (GPT)"
-        msg="检查操作系统"
+        msg="恢复分区表 (GPT)"
         dots $msg_en
         restoreGRUB "$disk" "$disk_number" "$imagePath" "true"
         sgdisk -z $disk >/dev/null 2>&1
@@ -2490,9 +2521,6 @@ restorePartitionTablesAndBootLoaders() {
             debugPause
             [[ -r /tmp/sgdisk-gl.err ]] && cat /tmp/sgdisk-gl.err
             echo "Find the detailed error message above this line. Use Shift-PageUp to scroll upwards."
-            msg="Find the detailed error message above this line. Use Shift-PageUp to scroll upwards."
-            msg_val="T"
-            callBackLog $msg_val $msg
             handleError "Error trying to restore GPT partition tables (${FUNCNAME[0]})\n   Args Passed: $*\n    CMD Tried: sgdisk -gl $tmpMBR $disk\n    Exit returned code: $sgdiskexit"
         fi
         rm -f /tmp/sgdisk-gl.err
@@ -2525,7 +2553,7 @@ restorePartitionTablesAndBootLoaders() {
         sfdiskLegacyOriginalPartitionFileName "$imagePath" "$disk_number"
         if [[ -r $sfdiskoriginalpartitionfilename ]]; then
             msg_en="Inserting Extended partitions (Original)"
-            msg="检查操作系统"
+            msg="插入扩展分区（原始）"
             dots $msg_en
             flock $disk sfdisk $disk < $sfdiskoriginalpartitionfilename >/dev/null 2>&1
             case $? in
@@ -2542,7 +2570,7 @@ restorePartitionTablesAndBootLoaders() {
             esac
         elif [[ -e $sfdisklegacyoriginalpartitionfilename ]]; then
             msg_en="Inserting Extended partitions (Legacy)"
-            msg="检查操作系统"
+            msg="插入扩展分区（旧版）"
             dots $msg_en
             flock $disk sfdisk $disk < $sfdisklegacyoriginalpartitionfilename >/dev/null 2>&1
             case $? in
@@ -2559,7 +2587,7 @@ restorePartitionTablesAndBootLoaders() {
             esac
         else
             echo " * No extended partitions"
-            msg="No extended partitions"
+            msg="没有扩展分区"
             msg_val="T"
             callBackLog $msg_val $msg
         fi
@@ -2588,7 +2616,7 @@ savePartition() {
         return
     fi
     echo " * Processing Partition: $part ($part_number)"
-    msg="Processing Partition: $part ($part_number)"
+    msg="处理分区: $part ($part_number)"
     msg_val="T"
     callBackLog $msg_val $msg
     debugPause
@@ -2599,7 +2627,7 @@ savePartition() {
     case $fstype in
         swap)
             echo " * Saving swap partition UUID"
-            msg="Saving swap partition UUID"
+            msg="保存交换分区 UUID"
             msg_val="T"
             callBackLog $msg_val $msg
             swapUUIDFileName "$imagePath" "$disk_number"
@@ -2607,11 +2635,11 @@ savePartition() {
             ;;
         imager)
             echo " * Using partclone.$fstype"
-            msg="Using partclone.$fstype"
+            msg="使用命令 partclone.$fstype"
             msg_val="T"
             callBackLog $msg_val $msg
             debugPause
-            msg="Image Captured is Processing"
+            msg="正在捕获镜像中"
             msg_val="T"
             callBackLog $msg_val $msg
             imgpart="$imagePath/d${disk_number}p${part_number}.img"
@@ -2622,7 +2650,7 @@ savePartition() {
                 0)
                     mv ${imgpart}.000 $imgpart >/dev/null 2>&1
                     echo " * Image Captured"
-                    msg="Image Captured"
+                    msg="镜像已捕获"
                     msg_val="T"
                     callBackLog $msg_val $msg
                     debugPause
@@ -2637,7 +2665,7 @@ savePartition() {
             case $parttype in
                 0x5|0xf)
                     echo " * Not capturing content of extended partition"
-                    msg="Not capturing content of extended partition"
+                    msg="不捕获扩展分区的内容"
                     msg_val="T"
                     callBackLog $msg_val $msg
                     debugPause
@@ -2646,11 +2674,11 @@ savePartition() {
                     ;;
                 *)
                     echo " * Using partclone.$fstype"
-                    msg="Using partclone.$fstype"
+                    msg="使用命令 partclone.$fstype"
                     msg_val="T"
                     callBackLog $msg_val $msg
                     debugPause
-                    msg="Image Captured is Processing"
+                    msg="正在捕获镜像中"
                     msg_val="T"
                     callBackLog $msg_val $msg
                     imgpart="$imagePath/d${disk_number}p${part_number}.img"
@@ -2661,7 +2689,7 @@ savePartition() {
                         0)
                             mv ${imgpart}.000 $imgpart >/dev/null 2>&1
                             echo " * Image Captured"
-                            msg="Image Captured"
+                            msg="镜像已捕获"
                             msg_val="T"
                             callBackLog $msg_val $msg
                             debugPause
@@ -2690,7 +2718,10 @@ restorePartition() {
     [[ -z $disk_number ]] && handleError "No disk number passed (${FUNCNAME[0]})\n   Args Passed: $*"
     [[ -z $imagePath ]] && handleError "No image path passed (${FUNCNAME[0]})\n   Args Passed: $*"
     if [[ $imgPartitionType != all && $imgPartitionType != $part_number ]]; then
-        dotTitle " * Skipping partition: $part ($part_number)"
+        echo " * Skipping partition: $part ($part_number)"
+        msg="跳过分区: $part ($part_number)"
+        msg_val="T"
+        callBackLog $msg_val $msg
         debugPause
         return
     fi
@@ -2704,7 +2735,10 @@ restorePartition() {
     fi
     getDiskFromPartition "$part" "$israw"
     getPartitionNumber "$part"
-    dotTitle " * Processing Partition: $part ($part_number)"
+    echo " * Processing Partition: $part ($part_number)"
+    msg="处理分区: $part ($part_number)"
+    msg_val="T"
+    callBackLog $msg_val $msg
     debugPause
     case $imgType in
         dd)
@@ -2763,7 +2797,7 @@ restorePartition() {
     ls $imgpart >/dev/null 2>&1
     if [[ ! $? -eq 0 ]]; then
         EBRFileName "$imagePath" "$disk_number" "$part_number"
-        [[ -e $ebrfilename ]] && dotTitle " * Not deploying content of extended partition" || dotTitle " * Partition File Missing: $imgpart"
+        [[ -e $ebrfilename ]] && dotTitle "不部署扩展分区的内容" " * Not deploying content of extended partition" || dotTitle "分区文件丢失:$imgpart" " * Partition File Missing: $imgpart"
         runPartprobe "$disk"
         return
     fi
@@ -2776,7 +2810,7 @@ runFixparts() {
     [[ -z $disk ]] && handleError "No disk passed (${FUNCNAME[0]})\n   Args Passed: $*"
     echo
     msg_en="Attempting fixparts"
-    msg="检查操作系统"
+    msg="尝试修复部分"
     dots $msg_en
     fixparts $disk </usr/share/fog/lib/EOFFIXPARTS >/dev/null 2>&1
     case $? in
@@ -2822,7 +2856,7 @@ prepareResizeDownloadPartitions() {
     [[ -z $imgPartitionType ]] && handleError "No image partition type  passed (${FUNCNAME[0]})\n   Args Passed: $*"
     if [[ $nombr -eq 1 ]]; then
         echo -e " * Skipping partition preperation\n"
-        msg="Skipping partition preperation"
+        msg="跳过分区准备"
         msg_val="T"
         callBackLog $msg_val $msg
         debugPause
@@ -2833,7 +2867,7 @@ prepareResizeDownloadPartitions() {
     fillDiskWithPartitionsIsOK "$disk" "$imagePath" "$disk_number"
     majorDebugEcho "Filling disk = $do_fill"
     msg_en="Attempting to expand/fill partitions"
-    msg="检查操作系统"
+    msg="尝试扩展/填充分区"
     dots $msg_en
     if [[ $do_fill -eq 0 ]]; then
         msg_val="Failed"
@@ -2882,13 +2916,13 @@ performRestore() {
         done
         restoreparts=""
         echo " * Resetting UUIDs for $disk"
-        msg="Resetting UUIDs for $disk"
+        msg="为 $disk 重置 UUID"
         msg_val="T"
         callBackLog $msg_val $msg
         debugPause
         restoreUUIDInformation "$disk" "$sfdiskoriginalpartitionfilename" "$disk_number" "$imagePath"
         echo " * Resetting swap systems"
-        msg="Resetting swap systems"
+        msg="重置交换系统"
         msg_val="T"
         callBackLog $msg_val $msg
         debugPause

@@ -267,7 +267,7 @@ preparePartitions() {
                                         callBackLog $msg_val $msg
                                         debugPause
                                         msg_en="Recreating sized out partitions"
-                                        msg="检查操作系统"
+                                        msg="重新创建尺寸过大的分区"
                                         dots $msg_en
                                         sgdisk -x 3:$(sgdisk -E $hd) $hd >/dev/null 2>&1
                                         if [[ ! $? -eq 0 ]]; then
@@ -287,7 +287,7 @@ preparePartitions() {
                         debugPause
                         runPartprobe "$hd"
                         msg_en="Setting up partition variables"
-                        msg="检查操作系统"
+                        msg="设置分区变量"
                         dots $msg_en
                         getPartitions "$hd"
                         restoreparts=""
@@ -354,6 +354,6 @@ putDataBack() {
     esac
 }
 findHDDInfo
-[[ $nombr -eq 1 ]] && dotTitle " * Skipping partition layout (Single Partition restore)" || preparePartitions
-[[ $imgPartitionType != mbr ]] && putDataBack || dotTitle " * Skipping partition restore (MBR Only)"
+[[ $nombr -eq 1 ]] && dotTitle "跳过分区布局(单个分区恢复)" " * Skipping partition layout (Single Partition restore)" || preparePartitions
+[[ $imgPartitionType != mbr ]] && putDataBack || dotTitle "跳过分区恢复(仅限MBR)" " * Skipping partition restore (MBR Only)"
 completeTasking
